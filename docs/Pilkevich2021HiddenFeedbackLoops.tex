@@ -1,5 +1,6 @@
 \documentclass[12pt, twoside]{article}
 \usepackage{jmlda}
+\usepackage[]{algorithmic}
 \usepackage{graphicx}
 \newcommand{\hdir}{.}
 
@@ -148,7 +149,17 @@ $\mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t)$.
 \begin{center}
   \includegraphics[width=8cm]{regards.pdf}
 \end{center}
-
+\paragraph{Псевдокод}
+\begin{algorithmic}
+  \STATE Инициализируем $\mu_0^i, \alpha_0^i, \beta_0^i$.
+  \FOR{$t$ от $1$ до $T$} 
+    \STATE $r_t \leftarrow$ РекомендацияTS()
+    \STATE $c_t \leftarrow$ ГенерацияОткликаПользователя($r_t$)
+    \STATE ОбновлениеПараметровTS($c_t$)
+    \STATE ОбновлениеИнтересаПользователя($c_t$)
+    \STATE Сохранение($t, c_t, \mu_t$)
+  \ENDFOR
+\end{algorithmic}
 %%%% если имеется doi цитируемого источника, необходимо его указать, см. пример в \bibitem{article}
 %%%% DOI публикации, зарегистрированной в системе Crossref, можно получить по адресу http://www.crossref.org/guestquery/
 \begin{thebibliography}{99}
