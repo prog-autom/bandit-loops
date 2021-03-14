@@ -8,7 +8,7 @@ then
   printf "Parameters inside this scripts are configurable: step, usage, adherence."
   printf "\n\n"
   printf "Usage: run_experiment.sh <pipeline_name>\n\n"
-  printf "See ./experiment.yaml for more details\n"
+  printf "See ./experiment.yml for more details\n"
   exit
 fi
 
