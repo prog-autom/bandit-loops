@@ -1,0 +1,80 @@
+# See the paper for experiment description
+
+#
+# General experiment parameters
+#
+
+# We fix random seed here
+random_seed: 45
+
+# Number of trial or runs to repeat the experiment
+run_times: 16
+
+
+# Models and their parameters to use
+# Any key in this object will trigger a corresponding model builder
+# The ``ridge_model`` inits a builder for an Sklearn RidgeCV model
+default_model: &default_params
+  ts_model:
+    M: 5
+    l: 2
+
+
+#
+# Definition of experiment stages
+#
+
+bandit_loops: &bandit_loops !BasicStage
+  name: hidden_loops
+  params: &bandit_loop_params
+    model_params:
+      <<: *default_params
+    experiment:
+      T: 1000
+      w: 1.0
+      Q: 1.0
+      p: 0.01
+  outputs:
+    - !path
+      path:  !line |
+              ./results/${self.name}/${root.random_seed}/
+              ${self.params.experiment.T}-
+              ${self.params.experiment.w}/
+              ${self.params.experiment.Q}-
+              ${self.params.experiment.p}
+
+  script:
+    - >
+      python ./src/main.py hidden-loop \
+                     --model_params "${json(self.params.model_params)}" \
+                     --params "${json(self.params.experiment)}" \
+                     --folder "${self.outputs[0].path}" \
+                     --random_seed "${root.random_seed}" \
+                     --run_times "${root.run_times}"
+    - >
+      echo "${json(self.params)}" > "${self.outputs[0].path}/params.json"
+
+# This is basic pipeline to run our two stages in sequence
+pipeline: !GenericPipeline
+  runs:
+    - *bandit_loops
+
+# This pipeline is intended to be run the run_experiment script
+# It receives the following parameters from the environment
+# ``env.w``
+run_model_experiment: !GenericPipeline
+  runs:
+    # We define an anonymous inline stage that reuses our previous hidden_loops stage
+    # It is convenient to reuse the stage definition to change some of the parameters
+    - !BasicStage
+      <<: *bandit_loops
+      params:
+        <<: *bandit_loop_params
+        experiment:
+          T: 1000
+          # for this pipeline we redefine some parameters
+          # and use the ones from the environment
+          # they will still be in the json dump
+          w: ${env.w}
+
+
