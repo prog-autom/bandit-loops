@@ -8,7 +8,7 @@
 random_seed: 45
 
 # Number of trial or runs to repeat the experiment
-run_times: 16
+run_times: 1
 
 
 # Models and their parameters to use
@@ -16,8 +16,8 @@ run_times: 16
 # The ``ridge_model`` inits a builder for an Sklearn RidgeCV model
 default_model: &default_params
   ts_model:
-    M: 5
-    l: 2
+    M: 10
+    l: 4
 
 
 #
@@ -25,13 +25,13 @@ default_model: &default_params
 #
 
 bandit_loops: &bandit_loops !BasicStage
-  name: hidden_loops
+  name: bandit_loops
   params: &bandit_loop_params
     model_params:
       <<: *default_params
-    experiment:
+    experiment: &default_experiment
       T: 1000
-      w: 1.0
+      w: 10.0
       Q: 1.0
       p: 0.01
   outputs:
@@ -45,7 +45,7 @@ bandit_loops: &bandit_loops !BasicStage
 
   script:
     - >
-      python ./src/main.py hidden-loop \
+      python ./code/main.py bandit-loop \
                      --model_params "${json(self.params.model_params)}" \
                      --params "${json(self.params.experiment)}" \
                      --folder "${self.outputs[0].path}" \
@@ -71,6 +71,7 @@ run_model_experiment: !GenericPipeline
       params:
         <<: *bandit_loop_params
         experiment:
+          <<: *default_experiment
           T: 1000
           # for this pipeline we redefine some parameters
           # and use the ones from the environment

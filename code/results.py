@@ -29,6 +29,10 @@ class MultipleResults:
         return sb.lineplot(data=data, x=x, y=y, legend='brief', **kwargs)
 
     @staticmethod
+    def scatterplot(data, x, y, **kwargs):
+        return sb.scatterplot(data=data, x=x, y=y, legend='brief', **kwargs)
+
+    @staticmethod
     def histplot(data, x, y, **kwargs):
         return sb.histplot(data=data, x=y, stat="probability", legend=True, **kwargs)
 
@@ -52,8 +56,14 @@ class MultipleResults:
                         else plot_fun
             for k in data_keys:
                 data_k = pd.DataFrame(data=vars(self)[k])
-                plot_fun(data=data_k, x="round", y=k, label=self.state_vars[k])
-                data = data.merge(data_k, how="outer", on=MultipleResults.index_keys)                # todo rounds are not preserved
+                if hasattr(data_k[k][0], '__len__') and len(data_k[k][0]) > 0:
+                    for i in range(len(data_k[k][0])):
+                        name = f"{k}-{i}"
+                        data_k[name] = list(x[k][i] for x in vars(self)[k])
+                        plot_fun(data=data_k[['round', name]], x="round", y=name, label=str.format(self.state_vars[k], i))
+                else:
+                    plot_fun(data=data_k, x="round", y=k, label=self.state_vars[k])
+                data = data.merge(data_k, how="outer", on=MultipleResults.index_keys)
             plt.title(fig)
             plt.legend()
             plt.savefig(f"{path}/{self.model_name}-{fig}.png", dpi=300)
