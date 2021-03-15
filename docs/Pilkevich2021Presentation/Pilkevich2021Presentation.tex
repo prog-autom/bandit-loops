@@ -1,0 +1,120 @@
+\documentclass{beamer}
+\beamertemplatenavigationsymbolsempty
+\usecolortheme{beaver}
+\setbeamertemplate{blocks}[rounded=true, shadow=true]
+\setbeamertemplate{footline}[page number]
+%
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{amssymb,amsfonts,amsmath,mathtext}
+\usepackage{subfig}
+\usepackage[all]{xy} % xy package for diagrams
+\usepackage{array}
+\usepackage{multicol}% many columns in slide
+\usepackage{hyperref}% urls
+\usepackage{hhline}%tables
+% Your figures are here:
+\graphicspath{ {fig/} {../fig/} }
+
+%----------------------------------------------------------------------------------------------------------
+\title[\hbox to 56mm{Петли скрытой обратной связи}]{ Условия существования петель скрытой \\ обратной связи в рекомендательных системах }
+\author[А.\,А. Пилькевич]{Антон Александрович Пилькевич}
+\institute{Московский физико-технический институт}
+\date{\footnotesize
+\par\smallskip\emph{Курс:} Автоматизация научных исследований\par (практика, В.\,В.~Стрижов)/Группа 813
+\par\smallskip\emph{Эксперт:} А.\,С.~Хританков
+\par\smallskip\emph{Консультант:} А.\,С.~Хританков
+\par\bigskip\small 2021}
+%----------------------------------------------------------------------------------------------------------
+\begin{document}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}
+\thispagestyle{empty}
+\maketitle
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+%\begin{frame}{Цель исследования}
+%\begin{block}{Решается задача}
+%\end{block}
+%\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Cуществование петель при параметрах шума $w, Q$}
+
+Распределение отклика $c_t^i$ для рекомендации $\mathbf{a_t}$:
+\begin{gather*}
+  c_t^i \sim \text{Bern} \left(\sigma\left( \mu_t^i (a_t^i) \right) \right) \to \\
+  c_t^i \sim \text{Bern} \left(\sigma\left( \mu_t^i (a_t^i) + \mathbin{\color{red}w (q_t^i -1/2)} \right) \right), 
+\end{gather*}
+где $q_t^i \sim \text{Beta}(Q, Q)$. 
+
+\bigskip
+\begin{columns}[c]
+\column{0.5\textwidth}
+Условие существования петель: 
+\begin{gather*}
+  \color{red} \lim_{t \to \infty} \|\mu_t - \mu_0 \|_2 = \infty.
+\end{gather*}
+\column{0.5\textwidth}
+Алгоритм Thompson Sampling:
+\begin{gather*}
+\text{Beta}(\alpha_t, \beta_t), \\ 
+\alpha_{t+1} = \alpha_t + c_t, \\ 
+\beta_{t+1} = \beta_t + 1 - c_t
+\end{gather*}
+\end{columns}
+\end{frame}
+
+
+%----------------------------------------------------------------------------------------------------------
+%\begin{frame}{Постановка задачи}
+%
+%\end{frame}
+%----------------------------------------------------------------------------------------------------------
+%\begin{frame}{Решение}
+%\begin{columns}[c]
+%\column{0.6\textwidth}
+%    Столбец 1
+%\column{0.4\textwidth}
+%    Столбец 2
+%\end{columns}
+%\end{frame}
+%----------------------------------------------------------------------------------------------------------
+%\begin{frame}{Вычислительный эксперимент}
+%
+% Что зритель видит на графике.
+%
+%\includegraphics[width=0.8\textwidth]{ErrorFunction}
+%
+%О чем говорит этот график.
+%
+%\end{frame}
+%----------------------------------------------------------------------------------------------------------
+%\begin{frame}{Заключение}
+%    \begin{block}{Перечислите ваши результаты}
+%    \begin{itemize}
+%        \item предложен метод,
+%        \item доказана теорема.
+%    \end{itemize}
+%    \end{block}
+%\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\end{document} 
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+
+
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{���������� ������}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{�������}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{�������������� �����������}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{����������}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\end{document} 
