@@ -45,7 +45,7 @@ bandit_loops: &bandit_loops !BasicStage
 
   script:
     - >
-      python ./code/main.py bandit-loop \
+      python3 ./code/main.py bandit-loop \
                      --model_params "${json(self.params.model_params)}" \
                      --params "${json(self.params.experiment)}" \
                      --folder "${self.outputs[0].path}" \
