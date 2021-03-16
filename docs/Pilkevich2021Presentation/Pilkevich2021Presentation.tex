@@ -42,10 +42,12 @@
 
 Распределение отклика $c_t^i$ для рекомендации $\mathbf{a_t}$:
 \begin{gather*}
-  c_t^i \sim \text{Bern} \left(\sigma\left( \mu_t^i (a_t^i) + \mathbin{\color{red}w (q_t^i -1/2)} \right) \right), 
+  c_t^i \sim \text{Bern} \left(\sigma\left( \mu_t^i (a_t^i) + \mathbin{\color{red}w (q_t^i -1/2)} \right) \right), \\ 
+\mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t), 
 \end{gather*}
-где $q_t^i \sim \text{Beta}(Q, Q)$. 
+где $q_t^i \sim \text{Beta}(Q, Q), \delta_t \sim U[0, 0.01].$
 Рекомендации семплируются алгоритмом Thompson Sampling.
+
 \begin{columns}[c]
 \column{0.3\textwidth}
 Условие существования петель: 
@@ -54,7 +56,7 @@
 \end{gather*}
 \column{0.7\textwidth}
 \begin{center}
-  \includegraphics[width=8cm]{../norm_interest.pdf}
+  \includegraphics[width=7cm]{../norm_interest.pdf}
 \end{center}
 \end{columns}
 \end{frame}

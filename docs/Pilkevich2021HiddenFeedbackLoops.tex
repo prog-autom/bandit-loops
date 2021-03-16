@@ -136,7 +136,19 @@ $\mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t)$.
 Проверяется гипотеза о возникновении петель при параметрах шума, найденных из теоретических соотношений. 
 Важной частью эксперимента является сравнения поведений рекомендательной системы с шумом в ответах пользователя и без. 
 
-\paragraph{Результаты}
+\paragraph{Псевдокод}
+\begin{algorithmic}
+  \STATE Инициализируем $\mu_0^i, \alpha_0^i, \beta_0^i$.
+  \FOR{$t$ от $1$ до $T$} 
+    \STATE $r_t \leftarrow$ РекомендацияTS()
+    \STATE $c_t \leftarrow$ ГенерацияОткликаПользователя($r_t$)
+    \STATE ОбновлениеПараметровTS($c_t$)
+    \STATE ОбновлениеИнтересаПользователя($c_t$)
+    \STATE Сохранение($t, c_t, \mu_t$)
+  \ENDFOR
+\end{algorithmic}
+
+\section{Результаты}
 При определённом диапазоне параметров шума удалось про наблюдать эффект неограниченного роста интереса. 
 Наличие петель скрытой обратной связи иллюстрируется следующим графиком: 
 \begin{center}
@@ -149,17 +161,6 @@ $\mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t)$.
 \begin{center}
   \includegraphics[width=16cm]{rewards.pdf}
 \end{center}
-\paragraph{Псевдокод}
-\begin{algorithmic}
-  \STATE Инициализируем $\mu_0^i, \alpha_0^i, \beta_0^i$.
-  \FOR{$t$ от $1$ до $T$} 
-    \STATE $r_t \leftarrow$ РекомендацияTS()
-    \STATE $c_t \leftarrow$ ГенерацияОткликаПользователя($r_t$)
-    \STATE ОбновлениеПараметровTS($c_t$)
-    \STATE ОбновлениеИнтересаПользователя($c_t$)
-    \STATE Сохранение($t, c_t, \mu_t$)
-  \ENDFOR
-\end{algorithmic}
 %%%% если имеется doi цитируемого источника, необходимо его указать, см. пример в \bibitem{article}
 %%%% DOI публикации, зарегистрированной в системе Crossref, можно получить по адресу http://www.crossref.org/guestquery/
 \begin{thebibliography}{99}
