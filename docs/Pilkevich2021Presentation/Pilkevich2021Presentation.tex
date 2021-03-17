@@ -46,11 +46,11 @@
 \mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t), 
 \end{gather*}
 где $q_t^i \sim \text{Beta}(Q, Q), \delta_t \sim U[0, 0.01].$
-Рекомендации семплируются алгоритмом Thompson Sampling.
+Рекомендации семплируются алгоритмом MAB TS.
 
 \begin{columns}[c]
 \column{0.3\textwidth}
-Условие существования петель: 
+Определение петель: 
 \begin{gather*}
   \color{red} \lim_{t \to \infty} \|\mu_t - \mu_0 \|_2 = \infty.
 \end{gather*}
