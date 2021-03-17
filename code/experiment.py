@@ -1,10 +1,58 @@
 import numpy as np
-from matplotlib import pyplot as plt
-import seaborn as sb
 import scipy.stats as sps
+from collections import namedtuple
 
+from mathmodel import BanditNoiseLoopModel as Model
 
 import random
+
+from results import MultipleResults
+
+
+class TSBandit:
+    """
+    Implements a Thompson-Sampling Multiarmed Bandit algorithm for the item recommendation problem
+
+    See (insert link) for details
+
+    """
+    def __init__(self, M, l):
+        """
+        Creates a new instance of the TS Bandit for item recommendation problem
+
+        Inits Beta params [a, b] to uniformly sampled in [0, 1]
+
+        :param M: number of actions
+        :param l: return this number of recommendations
+        """
+        self.l = l
+        self.M = M
+        self.params = np.ones(shape=(self.M, 2))
+
+    def predict(self):
+        """
+        Get the next prediction from the bandit
+        :return: an np array with action probabilities, an np array of selected actions
+        """
+        pr = sps.beta(a=self.params[:,0], b=self.params[:,1]).rvs()
+        rec = np.argsort(-pr)[:self.l]
+        return pr, rec
+
+    def update(self, actions, response):
+        """
+        Updates the bandit with responses to previously given actions
+
+        :param actions: actions for which updates are
+        :param response: the rewards for the actions
+        :return: an updated params
+        """
+        self.params[actions] += np.vstack([response, 1 - response]).T
+        return self.params.copy()
+
+
+def get_ts_model(M, l):
+    assert l <= M
+    return TSBandit(M=int(M), l=int(l))
 
 
 def init_random_state(seed):
@@ -13,150 +61,107 @@ def init_random_state(seed):
     return seed
 
 
-def init_data(M):
-    return [sps.uniform(-1, 2).rvs(M)], [sps.uniform.rvs(size=(M,2))] 
-
-def sigmoid(x):
-    return 1. / (1 + np.exp(-x))
-
-def make_response_noise(interest, w, Q, p):
-    n = len(interest)
-    noise_interest = interest + w*(sps.beta(Q, Q).rvs(n) - 0.5)
-    return sps.bernoulli(p = sigmoid(noise_interest)).rvs()
-
-def make_response(interest):
-    return sps.bernoulli(p = sigmoid(interest)).rvs()
-
-def single_model_experiment(T, M, l, w, Q, p):
-    interest, TS_params = init_data(M) 
-    probalities = []
-    recomendations = []
-    response = []
-
-    for t in range(T):
-        probalities.append(
-            sps.beta(a = TS_params[t][:,0], b = TS_params[t][:,1]).rvs()
-        )
-        
-        recomendations.append(np.argsort(-probalities[t])[:l])
-        
-        response.append(
-            make_response_noise(interest[t][recomendations[t]], w, Q, p)
-        )
-        
-        new_params = TS_params[t].copy()
-        new_params[recomendations[t]] += np.vstack([response[t], 1-response[t]]).T
-        TS_params.append(new_params)
-        
-        bias = sps.uniform(0, 0.01).rvs(l)
-        new_interest = interest[t].copy()
-        new_interest[recomendations[t]] += response[t]*bias - bias*(1-response[t]) 
-        interest.append(new_interest)
-
-    interest = np.array(interest)
-    TS_params = np.array(TS_params)
-    probalities = np.array(probalities)
-    recomendations = np.array(recomendations)
-    response = np.array(response)
-
-    return interest, TS_params, probalities, recomendations, response
-
-class HiddenLoopExperiment:
+class BanditLoopExperiment:
     """
     The main experiment for hidden loops paper
     See details in the paper.
-
-    In short.
-
-    Creates a feedback loop on a regression problem (e.g. Boston housing).
-    Some of the model predictions are adhered to by users and fed back into the model as training data.
-    Users add a normally distributed noise to the log of the target variable (price).
-    Uses a sliding window to retrain the model on new data.
-
     """
-    def __init__(self, T, M, l, w, Q, p, seed):
-        self.T = T
-        self.M = M
-        self.l = l
-        self.w = w 
-        self.Q = Q
-        self.p = p
-        self.seed = seed
 
-    def _prepare(self, use_log=False):
+    default_state = {
+        'interest': 'Current interests:{}',
+        'probabilities': 'Estimated success probas:{}',
+        'recommendations': 'Actions:{}',
+        'loop_amp': 'Loop effect amplitude',
+        #'bandit_params': 'Reward estimates, TS bandit state'
+    }
+
+    default_figures = {
+        'Loop effect': ['loop_amp'],
+        'Estimated success probas': ['probabilities'],
+        'Interests': ['interest'],
+        'Actions': {'data':['recommendations'],'plot_fun': MultipleResults.scatterplot}
+    }
+
+    def __init__(self, bandit_model, bandit_name):
+        self.bandit_name = bandit_name
+        self.bandit_model = bandit_model
+
+    def prepare(self, w, Q, p, use_log=False):
         """
         Initializes the experiment
 
         :param train_size: size of the sliding window as a portion of the dataset
         :return: None
         """
-        init_random_state(self.seed)
+        self.w = float(w)
+        self.Q = float(Q)
+        self.p = float(p)
+
         self.use_log = bool(use_log)
 
-        self.interest, self.TS_params = init_data(self.M) 
-        self.probalities = []
-        self.recomendations = []
+        self.bandit = self.bandit_model()
+        self.init_interest = Model.interest_init(self.bandit.M)
+        self.interest = []
+        self.probabilities = []
+        self.recommendations = []
         self.response = []
+        self.bandit_params = []
+
+        self.loop_amp = []
 
         self.index = []
 
-    def _predict_TS(self, params):
-        pr = sps.beta(a = params[:,0], b = params[:,1]).rvs() 
-        rec = np.argsort(-pr)[:self.l] 
-        return pr, rec
+    def eval_metrics(self, cur_interest, init_interest):
+        cur_interest = np.asarray(cur_interest)
+        init_interest = np.asarray(init_interest)
+        cur_loop_amp = np.linalg.norm(cur_interest - init_interest)**2
+        self.loop_amp += [cur_loop_amp]
 
-    def _make_response(self, interest):
-        n = len(interest)
-        noise_interest = interest + self.w*(sps.beta(self.Q, self.Q).rvs(n) - 0.5)
-        return sps.bernoulli(p = sigmoid(noise_interest)).rvs()
+    ResultsTuple = namedtuple('ResultsNumpy',
+                              ['interest', 'TS_params',
+                               'probabilities', 'recommendations',
+                               'response'])
 
-    def _update_params(self, params, rec, response):
-        new_params = params.copy()
-        new_params[rec] += np.vstack([response, 1-response]).T
-        return new_params
+    def get_as_np(self):
+        return BanditLoopExperiment.ResultsTuple(
+            interest=np.array(self.interest),
+            TS_params=np.array(self.bandit_params),
+            probabilities=np.array(self.probabilities),
+            recommendations=np.array(self.recommendations),
+            response=np.array(self.response)
+        )
 
-    def _update_interest(self, interest, rec, response):
-        bias = sps.uniform(0, 0.01).rvs(self.l)
-        new_interest = interest.copy()
-        new_interest[rec] += response*bias - bias*(1-response) 
-        return new_interest
-
-    def _convert_data_np(self):
-        self.interest = np.array(self.interest)
-        self.TS_params = np.array(self.TS_params)
-        self.probalities = np.array(self.probalities)
-        self.recomendations = np.array(self.recomendations)
-        self.response = np.array(self.response)
-
-    def run_experiment(self):
-        self._prepare()
-
+    def run_experiment(self, T):
         def save_iter(t, pr, rec, resp, params, interest):
             self.index.append(t)
-            self.probalities.append(pr)
-            self.recomendations.append(rec)
+            self.probabilities.append(pr)
+            self.recommendations.append(rec)
             self.response.append(resp)
-            self.TS_params.append(params)
+            self.bandit_params.append(params)
             self.interest.append(interest)
 
+        cur_interest = self.init_interest
 
-        cur_interest = self.interest[0]
-        cur_TS_params = self.TS_params[0]
-        cur_probalities = None
-        cur_recomendations = None
-        cur_response = None
-
-        for t in range(self.T):
-            cur_probalities, cur_recomendations = self._predict_TS(cur_TS_params) 
+        for t in range(T):
+            cur_probabilities, cur_actions = self.bandit.predict()
             
-            cur_response = self._make_response(
-                cur_interest[cur_recomendations]
+            cur_response = Model.make_response_noise(
+                cur_interest[cur_actions],
+                w=self.w,
+                Q=self.Q,
+                p=0.0
             )
             
-            cur_TS_params = self._update_params(cur_TS_params, cur_recomendations, cur_response)
+            cur_bandit_params = self.bandit.update(cur_actions, cur_response)
             
-            cur_interest = self._update_interest(cur_interest, cur_recomendations, cur_response)
-            save_iter(t, cur_probalities, cur_recomendations, cur_response, cur_TS_params, cur_interest)
-            
+            cur_interest = cur_interest + Model.get_interest_update(l=self.bandit.l, M=self.bandit.M, actions=cur_actions, response=cur_response)
 
-        self._convert_data_np()
+            save_iter(t,
+                      pr=cur_probabilities,
+                      rec=cur_actions,
+                      resp=cur_response,
+                      params=cur_bandit_params,
+                      interest=cur_interest)
+
+            self.eval_metrics(cur_interest=cur_interest,
+                              init_interest=self.init_interest)
