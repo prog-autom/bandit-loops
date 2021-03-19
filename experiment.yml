@@ -18,7 +18,9 @@ default_model: &default_params
   ts_model:
     M: 10
     l: 4
-
+  random_model:
+    M: 10
+    l: 4
 
 #
 # Definition of experiment stages

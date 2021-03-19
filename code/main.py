@@ -19,6 +19,11 @@ def create_model(model_params):
         model = lambda : get_ts_model(**model_params['ts_model'])
         print(f"Using model: {model_name}")
         yield model, model_name
+    elif 'random_model' in model_params:
+        model_name = 'random_model'
+        model = lambda : get_random_model(**model_params['random_model'])
+        print(f"Using model: {model_name}")
+        yield model, model_name
 
 
 def bandit_loop(model_params, params):

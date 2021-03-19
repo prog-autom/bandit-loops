@@ -49,11 +49,35 @@ class TSBandit:
         self.params[actions] += np.vstack([response, 1 - response]).T
         return self.params.copy()
 
+class RandomModel:
+    """
+    """
+    def __init__(self, M, l):
+        """
+        :param M: number of actions
+        :param l: return this number of recommendations
+        """
+        self.l = l
+        self.M = M
+
+    def predict(self):
+        """
+        Get the next prediction
+        :return: an np array with action probabilities, an np array of selected actions
+        """
+        return [], np.random.permutation(self.M)[:self.l]
+
+    def update(self, actions, response):
+        return []
+
 
 def get_ts_model(M, l):
     assert l <= M
     return TSBandit(M=int(M), l=int(l))
 
+def get_random_model(M, l):
+    assert l <= M
+    return RandomModel(M=int(M), l=int(l))
 
 def init_random_state(seed):
     np.random.seed(int(seed))
