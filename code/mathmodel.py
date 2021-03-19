@@ -8,7 +8,7 @@ class BanditNoiseLoopModel:
     def interest_init(M):
         assert M >= 0
 
-        return sps.uniform(-1, 2).rvs(M)
+        return sps.uniform(-0.5, 1).rvs(M)
 
     @staticmethod
     def make_response_noise(interest, w, Q, p):
@@ -31,8 +31,8 @@ class BanditNoiseLoopModel:
 
 
     @staticmethod
-    def get_interest_update(l, M, actions, response):
+    def get_interest_update(l, M, actions, response, win_streak, b):
         bias = sps.uniform(0, 0.01).rvs(l)
         new_interest = np.zeros(M)
-        new_interest[actions] += response * bias - bias * (1 - response)
+        new_interest[actions] += response * bias - bias * (1 - response) * (1 + b*win_streak[actions]) 
         return new_interest
