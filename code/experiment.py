@@ -175,7 +175,7 @@ class BanditLoopExperiment:
                 cur_interest[cur_actions],
                 w=self.w,
                 Q=self.Q,
-                p=0.0
+                p=self.p
             )
             
             cur_bandit_params = self.bandit.update(cur_actions, cur_response)
