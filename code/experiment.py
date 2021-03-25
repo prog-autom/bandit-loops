@@ -118,7 +118,6 @@ class BanditLoopExperiment:
         :return: None
         """
         self.w = float(w)
-        self.Q = float(Q)
         self.p = float(p)
         self.b = float(b)
 
@@ -174,7 +173,6 @@ class BanditLoopExperiment:
             cur_response = Model.make_response_noise(
                 cur_interest[cur_actions],
                 w=self.w,
-                Q=self.Q,
                 p=self.p
             )
             

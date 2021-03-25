@@ -11,14 +11,13 @@ class BanditNoiseLoopModel:
         return sps.uniform(-0.5, 1).rvs(M)
 
     @staticmethod
-    def make_response_noise(interest, w, Q, p):
+    def make_response_noise(interest, w, p):
         n = len(interest)
 
         assert n > 0
         assert w >= 0
-        assert Q > 0
         noise = sps.bernoulli(p).rvs(n)
-        noise_interest = interest*noise - interest*(1-noise) + w * (sps.beta(Q, Q).rvs(n) - 0.5)
+        noise_interest = interest*noise - interest*(1-noise) + w * (sps.uniform().rvs(n) - 0.5)
         return sps.bernoulli(p=special.expit(noise_interest)).rvs()
 
     @staticmethod
