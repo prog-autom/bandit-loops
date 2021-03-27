@@ -130,33 +130,33 @@ $\alpha_{t+1} = \alpha_t + c_t, \beta_{t+1} = \beta_t + 1 - c_t$.
 Для удобства будем считать, что у нас $c_t \sim \text{Bern}_{\pm}(\sigma(s_t \cdot \mu_t(a_t) + q_t))$
 Тогда: 
 \begin{gather*}
-  E (c_t | s_t = x, q_t = y) = 2 \sigma(x \cdot \mu_{t-1} + y) - 1, \\
-  E (E (c_t | s_t, q_t = y)) = p \cdot (2 \sigma(\mu_{t-1} + y)) - 1) -  (1-p) \cdot (2 \sigma(- \mu_{t-1} + y)) - 1).  
+  E (c_t | s_t = x, q_t = y) = 2 \sigma(x \cdot E \mu_{t-1} + y) - 1, \\
+  E (E (c_t | s_t, q_t = y)) = p \cdot (2 \sigma(E \mu_{t-1} + y)) - 1) -  (1-p) \cdot (2 \sigma(- E\mu_{t-1} + y)) - 1).  
 \end{gather*}
 Далее для простоты считается, что $\sigma(x) \approx \text{ReLU}(x)$.
 Поэтому: 
 \begin{gather*}
-  \int_{-w}^w \text{ReLu}(\mu_{t-1} + y) \cdot \frac{1}{2 w} dy =  
+  \int_{-w}^w \text{ReLu}(E\mu_{t-1} + y) \cdot \frac{1}{2 w} dy =  
     \begin{cases} 
-      0, \text{ если } -\mu_{t-1} > w, \\
-      \mu_{t-1}, \text{ если } \mu_{t-1} > w, \\
-      \frac{(\mu_{t-1} + w)^2}{4 w}, \text{ если } |\mu_{t-1}| \leq w.
+      0, \text{ если } -E\mu_{t-1} > w, \\
+      E\mu_{t-1}, \text{ если } E\mu_{t-1} > w, \\
+      \frac{(E\mu_{t-1} + w)^2}{4 w}, \text{ если } |E\mu_{t-1}| \leq w.
     \end{cases} \\ 
-  \int_{-w}^w \text{ReLu}(-\mu_{t-1} + y) \cdot \frac{1}{2 w} dy =  
+  \int_{-w}^w \text{ReLu}(-E\mu_{t-1} + y) \cdot \frac{1}{2 w} dy =  
     \begin{cases} 
-      -\mu_{t-1}, \text{ если } -\mu_{t-1} > w, \\
-      0, \text{ если } \mu_{t-1} > w, \\
-      \frac{(-\mu_{t-1} + w)^2}{4 w}, \text{ если } |\mu_{t-1}| \leq w.
+      -E\mu_{t-1}, \text{ если } -E\mu_{t-1} > w, \\
+      0, \text{ если } E\mu_{t-1} > w, \\
+      \frac{(-E\mu_{t-1} + w)^2}{4 w}, \text{ если } |E\mu_{t-1}| \leq w.
     \end{cases} 
 \end{gather*}
 
 Отсюда можно получить рекурентное соотношение:
 \begin{gather*}
-  E \mu_{t} - E \mu_{t-1} = 1 - 2p + 2 \cdot 
+  E \mu_{t} - E \mu_{t-1} = (1 - 2p) E\delta_t + 2 E\delta_t \cdot 
     \begin{cases} 
-      (1-p) \mu_{t-1}, \text{ если } -\mu_{t-1} > w, \\
-      p \cdot \mu_{t-1}, \text{ если } \mu_{t-1} > w, \\
-      p\frac{(\mu_{t-1} + w)^2}{4 w} - (1-p)\frac{(-\mu_{t-1} + w)^2}{4 w}, \text{ если } |\mu_{t-1}| \leq w.
+      (1-p) E\mu_{t-1}, \text{ если } -E\mu_{t-1} > w, \\
+      p \cdot E\mu_{t-1}, \text{ если } E\mu_{t-1} > w, \\
+      \frac{1}{4w} \left( (2p -1) (E^2\mu_{t-1} + w^2) + 2 w E \mu_{t-1} \right), \text{ если } |E\mu_{t-1}| \leq w.
     \end{cases} 
 \end{gather*}
 

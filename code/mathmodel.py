@@ -17,7 +17,7 @@ class BanditNoiseLoopModel:
         assert n > 0
         assert w >= 0
         noise = sps.bernoulli(p).rvs(n)
-        noise_interest = interest*noise - interest*(1-noise) + w * (sps.uniform().rvs(n) - 0.5)
+        noise_interest = interest*noise - interest*(1-noise) + sps.uniform(-w, 2*w).rvs(n)
         return sps.bernoulli(p=special.expit(noise_interest)).rvs()
 
     @staticmethod
