@@ -160,6 +160,16 @@ $\alpha_{t+1} = \alpha_t + c_t, \beta_{t+1} = \beta_t + 1 - c_t$.
     \end{cases} 
 \end{gather*}
 
+Решением рекурентного соотношения являются:
+\begin{gather*}
+  E \mu_{t} = 
+    \begin{cases} 
+      \left( 2(1-p)E\delta_t+ 1\right )^t \cdot \mu_0 + \sum_{i=0}^{t-1}(2(1-p)E\delta_t+1)^i \cdot(1-2p)E\delta_t, \text{ если } -E\mu_{t-1} > w, \\
+      \left( 2 p E\delta_t+ 1\right )^t \cdot \mu_0 + \sum_{i=0}^{t-1}(2 p E\delta_t+1)^i \cdot(1-2p)E\delta_t, \text{ если } E\mu_{t-1} > w, \\
+      ..., \text{ если } |E\mu_{t-1}| \leq w.
+    \end{cases} 
+\end{gather*}
+
 \section{Вычислительный эксперимент}
 \paragraph{Описание данных и работы модели}
 Перед началом эксперимента фиксируются следующие параметры : $T$~--- кол-во итераций рекомендательной системы, $|M|$~--- кол-во рассматриваемых объектов для рекомендации, $l$~--- кол-во элементов в одной выдачи. 
