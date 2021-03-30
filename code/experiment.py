@@ -49,11 +49,35 @@ class TSBandit:
         self.params[actions] += np.vstack([response, 1 - response]).T
         return self.params.copy()
 
+class RandomModel:
+    """
+    """
+    def __init__(self, M, l):
+        """
+        :param M: number of actions
+        :param l: return this number of recommendations
+        """
+        self.l = l
+        self.M = M
+
+    def predict(self):
+        """
+        Get the next prediction
+        :return: an np array with action probabilities, an np array of selected actions
+        """
+        return [], np.random.permutation(self.M)[:self.l]
+
+    def update(self, actions, response):
+        return []
+
 
 def get_ts_model(M, l):
     assert l <= M
     return TSBandit(M=int(M), l=int(l))
 
+def get_random_model(M, l):
+    assert l <= M
+    return RandomModel(M=int(M), l=int(l))
 
 def init_random_state(seed):
     np.random.seed(int(seed))
@@ -86,7 +110,7 @@ class BanditLoopExperiment:
         self.bandit_name = bandit_name
         self.bandit_model = bandit_model
 
-    def prepare(self, w, Q, p, use_log=False):
+    def prepare(self, w, Q, p, b, use_log=False):
         """
         Initializes the experiment
 
@@ -94,13 +118,14 @@ class BanditLoopExperiment:
         :return: None
         """
         self.w = float(w)
-        self.Q = float(Q)
         self.p = float(p)
+        self.b = float(b)
 
         self.use_log = bool(use_log)
 
         self.bandit = self.bandit_model()
         self.init_interest = Model.interest_init(self.bandit.M)
+        self.win_streak = np.zeros(self.bandit.M)
         self.interest = []
         self.probabilities = []
         self.recommendations = []
@@ -148,13 +173,16 @@ class BanditLoopExperiment:
             cur_response = Model.make_response_noise(
                 cur_interest[cur_actions],
                 w=self.w,
-                Q=self.Q,
-                p=0.0
+                p=self.p
             )
             
             cur_bandit_params = self.bandit.update(cur_actions, cur_response)
             
-            cur_interest = cur_interest + Model.get_interest_update(l=self.bandit.l, M=self.bandit.M, actions=cur_actions, response=cur_response)
+            cur_interest = cur_interest + Model.get_interest_update(l=self.bandit.l, M=self.bandit.M, actions=cur_actions, response=cur_response, win_streak=self.win_streak*(cur_interest > 0), b=self.b)
+
+            # TODO: create function for update
+            self.win_streak[cur_actions] = self.win_streak[cur_actions]*cur_response + cur_response
+            self.win_streak[self.win_streak > 100] = 100
 
             save_iter(t,
                       pr=cur_probabilities,

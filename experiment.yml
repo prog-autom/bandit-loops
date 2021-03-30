@@ -18,7 +18,9 @@ default_model: &default_params
   ts_model:
     M: 10
     l: 4
-
+  random_model:
+    M: 10
+    l: 4
 
 #
 # Definition of experiment stages
@@ -33,7 +35,8 @@ bandit_loops: &bandit_loops !BasicStage
       T: 1000
       w: 10.0
       Q: 1.0
-      p: 0.01
+      p: 0.9
+      b: 0.0
   outputs:
     - !path
       path:  !line |
