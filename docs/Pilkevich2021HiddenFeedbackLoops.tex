@@ -2,6 +2,8 @@
 \usepackage{jmlda}
 \usepackage[]{algorithmic}
 \usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subfig}
 \newcommand{\hdir}{.}
 
 \begin{document}
@@ -234,11 +236,22 @@ $\mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t)$.
   \includegraphics[width=16cm]{rewards.pdf}
 \end{center}
 
+Разброс значений нормы интересов. 
+\begin{center}
+  \includegraphics[width=16cm]{var_norm_interest.pdf}
+\end{center}
+
 Для случайной модели не наблюдается явного образования петли. 
 Она более хаотична и отстутствует тренд неограниченного роста интереса.   
 \begin{center}
   \includegraphics[width=16cm]{norm_interest_random.pdf}
 \end{center}
+
+\begin{figure}[ht]
+  \subfloat[]{\includegraphics[width=9cm]{3d_plot_Ml.pdf}}
+  \subfloat[]{\includegraphics[width=9cm]{3d_plot_wp.pdf}}
+\end{figure}
+
 %%%% если имеется doi цитируемого источника, необходимо его указать, см. пример в \bibitem{article}
 %%%% DOI публикации, зарегистрированной в системе Crossref, можно получить по адресу http://www.crossref.org/guestquery/
 \begin{thebibliography}{99}
