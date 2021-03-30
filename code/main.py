@@ -35,7 +35,7 @@ def bandit_loop(model_params, params):
             ble_local = MultipleResults(model_name, **BanditLoopExperiment.default_state)
             ble = BanditLoopExperiment(model, model_name)
 
-            prepare_params = {k: params[k] for k in params.keys() & {'w', 'Q', 'p'}}
+            prepare_params = {k: params[k] for k in params.keys() & {'w', 'Q', 'p', 'b'}}
             ble.prepare(**prepare_params)
 
             loop_params = {k: params[k] for k in params.keys() & {'T'}}
