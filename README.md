@@ -2,7 +2,7 @@
 
 **Автор:** Пилькевич Антон
 
-**Консультант/эксперт:** Хританков Антон Александрович
+**Консультант/эксперт:** Хританков Антон Сергеевич
 
 ## Постановка задачи
 
@@ -16,36 +16,40 @@ We running the experiment as show at the figure below
 
 ## Как запускать
 
-TODO. Обновить для текущей задачи.
-
-Пример.
-
-There are two experiments included in this repo.
-
- - single model experiment that demonstrates how housing prices prediction can be solved 
- - hidden loops experiment shows the feedback loop effect as dscribed in the paper
-
-Running the same experiment with [mldev](https://gitlab.com/mlrep/mldev) involves the following steps.
+Running experiment with [mldev](https://gitlab.com/mlrep/mldev) involves the following steps.
 
 Install the ``mldev`` by executing
 
 ```bash
-$ curl https://gitlab.com/mlrep/mldev/-/raw/develop/install_mldev.sh -o install_mldev.sh
-$ chmod +x install_mldev.sh
-$ yes n | install_mldev.sh core
+$ git clone https://gitlab.com/mlrep/mldev 
+$ cd ./mldev && git checkout -b 79-fixes-for-0-3-dev1-exploreparams --track origin/79-fixes-for-0-3-dev1-exploreparams
+$ ./install_reqs.sh core
+$ python setup.py clean build install
 ``` 
+Then get the repo
+```bash
+$ git clone <this repo>
+$ cd <this repo folder>
+```
+
 Then initialize the experiment, this will install required dependencies
 
 ```bash
-$ mldev init --no-commit -r ./feedback-loops -t https://github.com/prog-autom/template-feedback-loops
+$ mldev init -p venv .
 ```
 
 Detailed description of the experiment can be found in [experiment.yml](./experiment.yml). See docs for [mldev](https://gitlab.com/mlrep/mldev) for details.
 
-And now, run the experiment
+Run simple experiment for a specific set of params
 
 ```bash
-$ cd ./feedback-loops && mldev --config .mldev/config.yaml run --no-commit -f experiment.yml pipeline
+$ mldev run pipeline
+```
+
+And now, run the full experiment with params grid explored. See [explore_params.yml](./explore_params.yml) for details.
+
+```bash
+$ mldev run run_grid
 ```
 
 Results will be placed into [./results](./results) folder.

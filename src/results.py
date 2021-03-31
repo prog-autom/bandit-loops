@@ -6,19 +6,22 @@ import pandas as pd
 class MultipleResults:
     index_keys = ['round', 'trial']
 
-    def __init__(self, model_name, **initial_state):
+    def __init__(self, model_name, params={}, **initial_state):
         self.model_name = model_name
+        self.params = params
+        self.param_names = set(params.keys())
         self.state_vars = initial_state
         for k, v in initial_state.items():
             vars(self)[k] = list()
 
     def add_state(self, trial=None, **update_state):
         for k in self.state_vars.keys():
-            vars(self)[k].extend([{'round':i, 'trial':trial, k:j} for i, j in enumerate(update_state[k])])
+            vars(self)[k].extend([{'round':i, 'trial':trial, **self.params, k:j} for i, j in enumerate(update_state[k])])
 
-    def add_results(self, **results):
+    def add_results(self, param_names=[], **results):
         for k in self.state_vars.keys():
             vars(self)[k].extend(results[k])
+            self.param_names.update(param_names)
 
     @property
     def get_state(self):
@@ -38,17 +41,21 @@ class MultipleResults:
 
     def save_state(self, path):
         data_keys = self.get_state.keys()
-        data = pd.DataFrame(columns=MultipleResults.index_keys)
+        index_keys = set(MultipleResults.index_keys + list(self.param_names))
+        data = pd.DataFrame(columns=index_keys)
         for k in data_keys:
             data_k = pd.DataFrame(data=vars(self)[k])
-            data = data.merge(data_k, how="outer", on=MultipleResults.index_keys)
+            data = data.merge(data_k, how="outer", on=list(index_keys))
 
         data.to_csv(f"{path}/{self.model_name}-state.csv", index_label='row')
+        data.to_json(f"{path}/{self.model_name}-state.json", orient="records", lines=True)
+        data.to_parquet(f"{path}/{self.model_name}-state.parquet", index=True)
 
     def plot_multiple_results(self, path, plot_fun=sb.lineplot, **figures):
         for fig in figures.keys():
             plt.figure()
-            data = pd.DataFrame(columns=MultipleResults.index_keys)
+            index_keys = set(MultipleResults.index_keys + list(self.param_names))
+            data = pd.DataFrame(columns=index_keys)
             data_keys = figures[fig]['data'] if isinstance(figures[fig], dict) \
                         else figures[fig]
             plot_fun = figures[fig].get('plot_fun', plot_fun) \
@@ -63,7 +70,7 @@ class MultipleResults:
                         plot_fun(data=data_k[['round', name]], x="round", y=name, label=str.format(self.state_vars[k], i))
                 else:
                     plot_fun(data=data_k, x="round", y=k, label=self.state_vars[k])
-                data = data.merge(data_k, how="outer", on=MultipleResults.index_keys)
+                data = data.merge(data_k, how="outer", on=list(index_keys))
             plt.title(fig)
             plt.legend()
             plt.savefig(f"{path}/{self.model_name}-{fig}.png", dpi=300)
