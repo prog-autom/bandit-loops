@@ -1,9 +1,11 @@
 logger:
-  level: "DEBUG"
+  level: "INFO"
 
 extras:
   base: mldev.experiment_objects
 
 environ:
+  PYTHONPATH: ./src
+  MPLBACKEND: agg
   ASK_MISSING: 0
 

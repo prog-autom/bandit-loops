@@ -11,7 +11,7 @@
 grid_analysis: &grid_analysis !ExploreParams
   grid:
     p: [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-    w: [0, 1, 3, 10]
+    w: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     M: [10]
     l: [4]
     b: [0.1]
@@ -27,7 +27,7 @@ grid_analysis: &grid_analysis !ExploreParams
     experiment: !function src/experiment.BanditLoopExperiment
     init_random_state: !function src/experiment.init_random_state
   folder: "${env.TARGETFOLDER}"
-  run_times: 2
+  run_times: 3
   random_seed: "${env.RANDOMSEED}"
 
 

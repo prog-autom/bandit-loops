@@ -48,7 +48,7 @@ bandit_loops: &bandit_loops !BasicStage
 
   script:
     - >
-      python3 ./src/main.py bandit-loop \
+      python ./src/main.py bandit-loop \
                      --model_params "${json(self.params.model_params)}" \
                      --params "${json(self.params.experiment)}" \
                      --folder "${self.outputs[0].path}" \
@@ -90,7 +90,7 @@ run_grid: !GenericPipeline
           path:  !line |
             ./results/${self.name}/${root.random_seed}
       env:
-        PYTHONPATH: '${env.PYTHONPATH}:./src'
+        PYTHONPATH: '${env.PYTHONPATH}:./src:./.mldev'
         TARGETFOLDER: "${self.outputs[0].path}"
         RANDOMSEED: "${root.random_seed}"
       script:

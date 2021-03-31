@@ -37,6 +37,11 @@ Then initialize the experiment, this will install required dependencies
 ```bash
 $ mldev init -p venv .
 ```
+Now install mldev into this venv as follows (need this to run sub-experiment)
+
+```bash
+$ /bin/bash -c "source venv/bin/activate; cd ../mldev && python setup.py clean build install"
+```
 
 Detailed description of the experiment can be found in [experiment.yml](./experiment.yml). See docs for [mldev](https://gitlab.com/mlrep/mldev) for details.
 
