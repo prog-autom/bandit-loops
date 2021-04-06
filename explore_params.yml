@@ -14,7 +14,7 @@ grid_analysis: &grid_analysis !ExploreParams
     w: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     M: [10]
     l: [4]
-    b: [0.1]
+    b: [0.0]
     # Q is not used but declared
     Q: [0]
     T: [2000]
@@ -27,7 +27,7 @@ grid_analysis: &grid_analysis !ExploreParams
     experiment: !function src/experiment.BanditLoopExperiment
     init_random_state: !function src/experiment.init_random_state
   folder: "${env.TARGETFOLDER}"
-  run_times: 3
+  run_times: 10
   random_seed: "${env.RANDOMSEED}"
 
 
