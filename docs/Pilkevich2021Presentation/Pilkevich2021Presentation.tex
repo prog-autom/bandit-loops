@@ -147,7 +147,7 @@ $\alpha_{t+1} = \alpha_t + c_t, \beta_{t+1} = \beta_t + 1 - c_t$.
 
 \begin{block}{Алгоритм}
 \begin{algorithmic}
-  \STATE Инициализируем $\mu_0^i, \alpha_0^i, \beta_0^i$.
+  \STATE BanditLoopExperiment.prepare().
   \FOR{$t$ от $1$ до $T$} 
     \STATE $r_t \leftarrow$ TSBandit.predict()
     \STATE $c_t \leftarrow$ make\_response\_noise($r_t$, w, p)
@@ -161,7 +161,6 @@ $\alpha_{t+1} = \alpha_t + c_t, \beta_{t+1} = \beta_t + 1 - c_t$.
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
 \begin{frame}{Вычислительный эксперимент}
-
 \begin{columns}[c]
 \column{0.5\textwidth}
 \begin{center}
@@ -179,10 +178,12 @@ $\alpha_{t+1} = \alpha_t + c_t, \beta_{t+1} = \beta_t + 1 - c_t$.
 
 \begin{columns}[c]
 \column{0.5\textwidth}
+Дисперсия интереса
 \begin{center}
   \includegraphics[width=6cm]{var_norm_interest.pdf}
 \end{center}
 \column{0.5\textwidth}
+Распределение интереса от параметров шума $w, p$
 \begin{center}
   \includegraphics[width=6cm]{plot_wp.pdf}
 \end{center}
@@ -191,7 +192,7 @@ $\alpha_{t+1} = \alpha_t + c_t, \beta_{t+1} = \beta_t + 1 - c_t$.
 \end{frame}
 %------------------------------------------------------------------------------------
 \begin{frame}{Сравнение моделей}
-
+Сравнивается MAB TS и рандомный алгоритм, то есть очередная рекомендация выбирается случайно.
 \begin{columns}[c]
 \column{0.5\textwidth}
 \begin{center}
@@ -207,8 +208,8 @@ $\alpha_{t+1} = \alpha_t + c_t, \beta_{t+1} = \beta_t + 1 - c_t$.
 \begin{frame}{Заключение}
   \begin{itemize}
       \item поставлена задача с учётом шума,
-      \item найдено приближённое соотношение для интереса,
-      \item соотношение проверно на эксперименте.
+      \item найдено приближённое соотношение для МО интереса,
+      \item соотношение проверено на эксперименте.
   \end{itemize}
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
