@@ -126,6 +126,7 @@ class BanditLoopExperiment:
         self.bandit = self.bandit_model()
         self.init_interest = Model.interest_init(self.bandit.M)
         self.win_streak = np.zeros(self.bandit.M)
+        self.lose_streak = np.zeros(self.bandit.M)
         self.interest = []
         self.probabilities = []
         self.recommendations = []
@@ -178,11 +179,19 @@ class BanditLoopExperiment:
             
             cur_bandit_params = self.bandit.update(cur_actions, cur_response)
             
-            cur_interest = cur_interest + Model.get_interest_update(l=self.bandit.l, M=self.bandit.M, actions=cur_actions, response=cur_response, win_streak=self.win_streak*(cur_interest > 0), b=self.b)
+            cur_interest = cur_interest + Model.get_interest_update(
+                    l=self.bandit.l, M=self.bandit.M, actions=cur_actions, response=cur_response, 
+                    win_streak=self.win_streak*(cur_interest > 0),
+                    lose_streak=self.lose_streak*(cur_interest > 0),
+                    b=self.b)
 
             # TODO: create function for update
             self.win_streak[cur_actions] = self.win_streak[cur_actions]*cur_response + cur_response
             self.win_streak[self.win_streak > 100] = 100
+
+            self.lose_streak[cur_actions] = self.lose_streak[cur_actions]*(1-cur_response) + \
+                    (1-cur_response)
+            self.lose_streak[self.lose_streak > 100] = 100
 
             save_iter(t,
                       pr=cur_probabilities,
