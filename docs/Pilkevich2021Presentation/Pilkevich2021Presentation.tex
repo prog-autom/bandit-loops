@@ -7,6 +7,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[english,russian]{babel}
 \usepackage{amssymb,amsfonts,amsmath,mathtext}
+\usepackage[]{algorithmic}
 \usepackage{subfig}
 \usepackage[all]{xy} % xy package for diagrams
 \usepackage{array}
@@ -33,19 +34,25 @@
 \maketitle
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
-%\begin{frame}{Цель исследования}
-%\begin{block}{Решается задача}
-%\end{block}
-%\end{frame}
+\begin{frame}{Цель исследования}
+\begin{block}{Цель}
+  Нахождение условий существования петель обратной
+связи в рекоммендательной системе с алгоритмом Thomson Sampling в условиях зашум-
+лённости выбора пользователя.
+\end{block}
+\begin{block}{Задача}
+  Математическое описания условий возникновения петель. 
+\end{block}
+\end{frame}
 %-----------------------------------------------------------------------------------------------------
 \begin{frame}{Cуществование петель при параметрах шума $w, Q$}
 
 Распределение отклика $c_t^i$ для рекомендации $\mathbf{a_t}$:
 \begin{gather*}
-  c_t^i \sim \text{Bern} \left(\sigma\left( \mu_t^i (a_t^i) + \mathbin{\color{red}w (q_t^i -1/2)} \right) \right), \\ 
-\mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t), 
+    c_t^i \sim \text{Bern} \left(\sigma\left( \color{red} s_t^i \color{black} \cdot \mu_t^i (a_t^i) + \mathbin{\color{red} q_t^i } \right) \right), \\ 
+    \mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t), 
 \end{gather*}
-где $q_t^i \sim \text{Beta}(Q, Q), \delta_t \sim U[0, 0.01].$
+где $s_t^i \sim \text{Bern}_{\pm 1}(p), q_t^i \sim \text{U}[-w, w], \delta_t \sim U[0, 0.01].$
 Рекомендации семплируются алгоритмом MAB TS.
 
 \begin{columns}[c]
@@ -56,62 +63,153 @@
 \end{gather*}
 \column{0.7\textwidth}
 \begin{center}
-  \includegraphics[width=7cm]{../norm_interest.pdf}
+  \includegraphics[width=7cm]{norm_interest.pdf}
 \end{center}
 \end{columns}
 \end{frame}
 
 
 %----------------------------------------------------------------------------------------------------------
-%\begin{frame}{Постановка задачи}
-%
-%\end{frame}
-%----------------------------------------------------------------------------------------------------------
-%\begin{frame}{Решение}
-%\begin{columns}[c]
-%\column{0.6\textwidth}
-%    Столбец 1
-%\column{0.4\textwidth}
-%    Столбец 2
-%\end{columns}
-%\end{frame}
-%----------------------------------------------------------------------------------------------------------
-%\begin{frame}{Вычислительный эксперимент}
-%
-% Что зритель видит на графике.
-%
-%\includegraphics[width=0.8\textwidth]{ErrorFunction}
-%
-%О чем говорит этот график.
-%
-%\end{frame}
-%----------------------------------------------------------------------------------------------------------
-%\begin{frame}{Заключение}
-%    \begin{block}{Перечислите ваши результаты}
-%    \begin{itemize}
-%        \item предложен метод,
-%        \item доказана теорема.
-%    \end{itemize}
-%    \end{block}
-%\end{frame}
-%----------------------------------------------------------------------------------------------------------
-\end{document} 
-\end{frame}
-%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Публикации по теме}
+\begin{thebibliography}{4}
+\bibitem{webArticle}
+    \BibAuthor{Ray~Jiang, Silvia~Chiappa, Tor~Lattimore,Andr{\'a}s Gy{\"o}rgy, Pushmeet~Kohli.}
+    Degenerate Feedback Loops in Recommender Systems//
+    \BibJournal{CoRR}, 2019, Vol. abs/1902.10730,
+	  URL: \BibUrl{https://arxiv.org/abs/1902.10730}.
 
+\bibitem{Article}
+    \BibAuthor{Khritankov, Anton.}
+    Hidden Feedback Loops in Machine Learning Systems: A simulation Model and Preliminary Results//
+    \BibJournal{Springer}, 2021, P.~54--65.
+
+\bibitem{webArticle}
+    \BibAuthor{Daniel Russo, Benjamin Van Roy, Abbas Kazerouni, Ian Osband.}
+    A Tutorial on Thompson Sampling//
+    \BibJournal{CoRR}, 2017, Vol. abs/1707.02038,
+	  URL: \BibUrl{https://arxiv.org/abs/1707.02038}.
+
+\bibitem{webArticle}
+    \BibAuthor{Shipra Agrawal, Navin Goyal.}
+    Analysis of Thompson Sampling for the multi-armed//
+    \BibJournal{CoRR}, 2011, Vol. abs/1111.1797,
+	  URL: \BibUrl{https://arxiv.org/abs/1111.1797}.
+
+\end{thebibliography}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Постановка задачи}
+  \begin{block}{Данные}
+  Множество объектов $M$, рекомендации $(a^1, \dots, a^l) \in M$, кол-во выдач $T$.
+  Задаётся ф-ия описывающая интерес пользователя $\mu_t : M \to \mathbb{R}$.
+
+  Распределение откликов и эволюция интереса:
+  \begin{gather*}
+    c_t^i \sim \text{Bern} \left(\sigma\left( \color{red} s_t^i \color{black} \cdot \mu_t^i (a_t^i) + \mathbin{\color{red} q_t^i } \right) \right), \\ 
+    s_t^i \sim \text{Bern}_{\pm 1}(p), \\ q_t^i \sim U[-w, w], \\
+\mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t). 
+  \end{gather*}
+  \end{block}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Петли скрытой обратной связи}
+  \begin{block}{MAB TS}
+Априорное распределение для параметров интереса равное $Beta(1, 1) = U[0, 1]$. 
+Апостериорное распределение для элемента $a^i \in M$ описывается $Beta(\alpha_t^i, \beta_t^i)$. 
+Параметры обновляются по закону :
+$\alpha_{t+1} = \alpha_t + c_t, \beta_{t+1} = \beta_t + 1 - c_t$.
+\end{block}
+\begin{columns}[c]
+\column{0.5\textwidth}
+  Определение петли:
+\begin{gather*}
+  \color{red} \lim_{t \to \infty} \|\mu_t - \mu_0 \|_2 = \infty.
+\end{gather*}
+\column{0.5\textwidth}
+\begin{gather*}  
+\max_{c_t^i} \sum_{t = 1}^T \sum_{i = 1}^l c_t^i = T \cdot l.\\ 
+   T \cdot l - \sum_{t = 1}^T \sum_{i = 1}^l c_t^i \to \min_{b}, 
+\end{gather*}
+\end{columns}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Решение}
+  \begin{gather*}
+    \text{coming soon...}
+  \end{gather*}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Вычислительный эксперимент}
+\begin{block}{Цель}
+Наблюдение петель скрытой обратной связи для определённых параметров шума. 
+Проверяется гипотеза о возникновении петель при параметрах шума, найденных из теоретических соотношений. 
+\end{block}
+
+\begin{block}{Алгоритм}
+\begin{algorithmic}
+  \STATE Инициализируем $\mu_0^i, \alpha_0^i, \beta_0^i$.
+  \FOR{$t$ от $1$ до $T$} 
+    \STATE $r_t \leftarrow$ TSBandit.predict()
+    \STATE $c_t \leftarrow$ make\_response\_noise($r_t$, w, p)
+    \STATE TSBandit.update($c_t$)
+    \STATE Model.interest\_update($c_t$)
+    \STATE save\_iter($t, c_t, \mu_t$)
+  \ENDFOR
+\end{algorithmic}
+\end{block}
 
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
-\begin{frame}{���������� ������}
+\begin{frame}{Вычислительный эксперимент}
+
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{center}
+  \includegraphics[width=6cm]{norm_interest.pdf}
+\end{center}
+\column{0.5\textwidth}
+\begin{center}
+  \includegraphics[width=6cm]{rewards.pdf}
+\end{center}
+\end{columns}
+
+\end{frame}
+%------------------------------------------------------------------------------------
+\begin{frame}{Анализ ошибки}
+
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{center}
+  \includegraphics[width=6cm]{var_norm_interest.pdf}
+\end{center}
+\column{0.5\textwidth}
+\begin{center}
+  \includegraphics[width=6cm]{plot_wp.pdf}
+\end{center}
+\end{columns}
+
+\end{frame}
+%------------------------------------------------------------------------------------
+\begin{frame}{Сравнение моделей}
+
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{center}
+  \includegraphics[width=6cm]{norm_interest.pdf}
+\end{center}
+\column{0.5\textwidth}
+\begin{center}
+  \includegraphics[width=6cm]{norm_interest_random.pdf}
+\end{center}
+\end{columns}
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
-\begin{frame}{�������}
-\end{frame}
-%----------------------------------------------------------------------------------------------------------
-\begin{frame}{�������������� �����������}
-\end{frame}
-%----------------------------------------------------------------------------------------------------------
-\begin{frame}{����������}
+\begin{frame}{Заключение}
+  \begin{itemize}
+      \item поставлена задача с учётом шума,
+      \item найдено приближённое соотношение для интереса,
+      \item соотношение проверно на эксперименте.
+  \end{itemize}
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
 \end{document} 
