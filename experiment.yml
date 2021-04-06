@@ -48,7 +48,7 @@ bandit_loops: &bandit_loops !BasicStage
 
   script:
     - >
-      python3 ./code/main.py bandit-loop \
+      python ./src/main.py bandit-loop \
                      --model_params "${json(self.params.model_params)}" \
                      --params "${json(self.params.experiment)}" \
                      --folder "${self.outputs[0].path}" \
@@ -80,5 +80,20 @@ run_model_experiment: !GenericPipeline
           # and use the ones from the environment
           # they will still be in the json dump
           w: ${env.w}
+
+run_grid: !GenericPipeline
+  runs:
+    - !BasicStage
+      name: grid_search
+      outputs:
+        - !path
+          path:  !line |
+            ./results/${self.name}/${root.random_seed}
+      env:
+        PYTHONPATH: '${env.PYTHONPATH}:./src:./.mldev'
+        TARGETFOLDER: "${self.outputs[0].path}"
+        RANDOMSEED: "${root.random_seed}"
+      script:
+        - mldev run -f ./explore_params.yml grid_pipeline
 
 

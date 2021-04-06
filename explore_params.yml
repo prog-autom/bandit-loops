@@ -1,0 +1,36 @@
+#
+# This set ups the parameter grid search
+# grid: specified parameters and a list of values
+# results: what attributes of the experiment class include into results file
+# bandit_model, bandit_name, experiment, init_random_state are links to user code
+# folder: where to place the results
+# run_times: this many times repeat for each parameters tuple
+# random_seed: use this random seed
+#
+
+grid_analysis: &grid_analysis !ExploreParams
+  grid:
+    p: [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    w: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    M: [10]
+    l: [4]
+    b: [0.1]
+    # Q is not used but declared
+    Q: [0]
+    T: [2000]
+  results:
+    interest: "User interests"
+    loop_amp: '\abs(\mu^t - \mu^0)'
+  pipeline:
+    bandit_model: !function src/experiment.get_ts_model
+    bandit_name: 'ts_model'
+    experiment: !function src/experiment.BanditLoopExperiment
+    init_random_state: !function src/experiment.init_random_state
+  folder: "${env.TARGETFOLDER}"
+  run_times: 3
+  random_seed: "${env.RANDOMSEED}"
+
+
+grid_pipeline: !GenericPipeline
+  runs:
+    - *grid_analysis
