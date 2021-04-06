@@ -36,12 +36,12 @@
 %-----------------------------------------------------------------------------------------------------
 \begin{frame}{Цель исследования}
 \begin{block}{Цель}
-  Нахождение условий существования петель обратной
+  Исследование условий существования петель обратной
 связи в рекоммендательной системе с алгоритмом Thomson Sampling в условиях зашум-
 лённости выбора пользователя.
 \end{block}
 \begin{block}{Задача}
-  Математическое описания условий возникновения петель. 
+  Нахождение математического описания условий возникновения петель и экспериментальная их проверка. 
 \end{block}
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
@@ -63,7 +63,7 @@
 \end{gather*}
 \column{0.7\textwidth}
 \begin{center}
-  \includegraphics[width=7cm]{norm_interest.pdf}
+  \includegraphics[width=7cm]{../norm_interest.pdf}
 \end{center}
 \end{columns}
 \end{frame}
@@ -134,20 +134,26 @@ $\alpha_{t+1} = \alpha_t + c_t, \beta_{t+1} = \beta_t + 1 - c_t$.
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
 \begin{frame}{Решение}
-  \begin{gather*}
-    \text{coming soon...}
-  \end{gather*}
+  \begin{block}{Утверждение}
+    При фиксированном $\color{red} p = 1$ и любых параметрах шума $\color{red} w$ возникает петля скрытой обратной связи. 
+  \end{block}
+  \begin{block}{Гипотезы}
+  \begin{itemize}
+      \item Любой несмещённый аддитивный шум не влияет на возникновение петли. 
+      \item При достаточно большом значение $\mu_t$ из-за $\sigma (x)$ шум $w$ перестаёт сколько-то значимо изменять истинный интерес. 
+  \end{itemize}
+  \end{block}
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
 \begin{frame}{Вычислительный эксперимент}
 \begin{block}{Цель}
-Наблюдение петель скрытой обратной связи для определённых параметров шума. 
-Проверяется гипотеза о возникновении петель при параметрах шума, найденных из теоретических соотношений. 
+Проверка гипотезы о возникновении петель при параметрах шума, найденных из теоретических соотношений. 
 \end{block}
 
 \begin{block}{Алгоритм}
 \begin{algorithmic}
-  \STATE BanditLoopExperiment.prepare().
+  \REQUIRE{M, l, T, w, p}
+  \STATE BanditLoopExperiment.prepare()
   \FOR{$t$ от $1$ до $T$} 
     \STATE $r_t \leftarrow$ TSBandit.predict()
     \STATE $c_t \leftarrow$ make\_response\_noise($r_t$, w, p)
@@ -163,53 +169,52 @@ $\alpha_{t+1} = \alpha_t + c_t, \beta_{t+1} = \beta_t + 1 - c_t$.
 \begin{frame}{Вычислительный эксперимент}
 \begin{columns}[c]
 \column{0.5\textwidth}
+Зависимость нормы интeреса от итерации.
 \begin{center}
-  \includegraphics[width=6cm]{norm_interest.pdf}
+  \includegraphics[width=6cm]{../norm_interest.pdf}
 \end{center}
 \column{0.5\textwidth}
+Зависимость суммы откликов от итерации.  
 \begin{center}
-  \includegraphics[width=6cm]{rewards.pdf}
+  \includegraphics[width=6cm]{../rewards.pdf}
 \end{center}
 \end{columns}
 
 \end{frame}
 %------------------------------------------------------------------------------------
 \begin{frame}{Анализ ошибки}
-
+Распределение интереса от параметров шума $w, p$ после $2000$ итераций.
 \begin{columns}[c]
 \column{0.5\textwidth}
-Дисперсия интереса
 \begin{center}
-  \includegraphics[width=6cm]{var_norm_interest.pdf}
+  \includegraphics[width=6cm]{../3d_var_wp_max_interest.pdf}
 \end{center}
 \column{0.5\textwidth}
-Распределение интереса от параметров шума $w, p$
 \begin{center}
-  \includegraphics[width=6cm]{plot_wp.pdf}
+  \includegraphics[width=6cm]{../countour_wp.pdf}
 \end{center}
 \end{columns}
-
+\end{frame}
+%------------------------------------------------------------------------------------
+\begin{frame}{Анализ ошибки}
+Разброс нормы интереса
+\begin{center}
+  \includegraphics[width=8cm]{../var_norm_interest.pdf}
+\end{center}
 \end{frame}
 %------------------------------------------------------------------------------------
 \begin{frame}{Сравнение моделей}
 Сравнивается MAB TS и рандомный алгоритм, то есть очередная рекомендация выбирается случайно.
-\begin{columns}[c]
-\column{0.5\textwidth}
 \begin{center}
-  \includegraphics[width=6cm]{norm_interest.pdf}
+  \includegraphics[width=8cm]{../compare_random_and_ts.pdf}
 \end{center}
-\column{0.5\textwidth}
-\begin{center}
-  \includegraphics[width=6cm]{norm_interest_random.pdf}
-\end{center}
-\end{columns}
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
 \begin{frame}{Заключение}
   \begin{itemize}
       \item поставлена задача с учётом шума,
-      \item найдено приближённое соотношение для МО интереса,
-      \item соотношение проверено на эксперименте.
+      \item получено, что при любых парамeтрах шума возникает петля,  
+      \item утверждение подтвержденно на эксперименте.
   \end{itemize}
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
