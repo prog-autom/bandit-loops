@@ -106,16 +106,9 @@ $\alpha_{t+1} = \alpha_t + c_t, \beta_{t+1} = \beta_t + 1 - c_t$.
   P(s_t^i = 1) = p, \\ P(s_t^i = -1) = 1 - p, \\
   q_t^i \sim U[-w, w].
 \end{gather*}
-Величина $p$ должна быть равна доле шума в ответах. 
-
-Также рассматривается случай марковского процесса: 
-\begin{gather*}
-  P(s_t^i = 1 | s_{t-1}^i = 1) = \min(1, p + u), \\ 
-  P(s_t^i = 1 | s_{t-1}^i = -1) = \max(0, p - u). 
-\end{gather*}
 
 \paragraph{Цель}
-Целью работы является теоретический анализ условий сходимости TS для различных параметров шума $p, w, u$ и экспериментальное подтверждение полученых соотношений. 
+Целью работы является теоретический анализ условий сходимости TS для различных параметров шума $p, w$ и экспериментальное подтверждение полученых соотношений. 
 Также делается уточнений условий из [1]. 
 
 \section{Теоретическое обоснование}
@@ -140,58 +133,14 @@ $\textbf{Доказательство. }$ При достаточно больш
   E (E (c_t | s_t, q_t = y)) = p \cdot (2 \sigma(E \mu_{t-1} + y)) - 1) +  (1-p) \cdot (2 \sigma(- E\mu_{t-1} + y)) - 1).  
 \end{gather*}
 
-Далее для простоты считается, что $\sigma(x) \approx \text{ReLU}(x)$.
-Поэтому: 
+Далее для простоты считается, что $\sigma(x) \approx \left(\frac{x}{4} + \frac{1}{2} \right) \cdot I[-2, 2] + I[2, \infty]$ и $p = 1$.
+Тогда остаётся посчитать:
 \begin{gather*}
-  \int_{-w}^w \text{ReLu}(E\mu_{t-1} + y) \cdot \frac{1}{2 w} dy =  
-    \begin{cases} 
-      0, \text{ если } -E\mu_{t-1} > w, \\
-      E\mu_{t-1}, \text{ если } E\mu_{t-1} > w, \\
-      \frac{(E\mu_{t-1} + w)^2}{4 w}, \text{ если } |E\mu_{t-1}| \leq w.
-    \end{cases} \\ 
-  \int_{-w}^w \text{ReLu}(-E\mu_{t-1} + y) \cdot \frac{1}{2 w} dy =  
-    \begin{cases} 
-      -E\mu_{t-1}, \text{ если } -E\mu_{t-1} > w, \\
-      0, \text{ если } E\mu_{t-1} > w, \\
-      \frac{(-E\mu_{t-1} + w)^2}{4 w}, \text{ если } |E\mu_{t-1}| \leq w.
-    \end{cases} 
+  E \sigma(\mu_t) \approx \int_{-\infty}^{\infty} \left(\frac{E \mu_t + y}{4} + \frac{1}{2} \right) I\{-2 < E\mu_t +y < 2\} f(y)dy \\
+  + \int_{-\infty}^{\infty} \left(\frac{E \mu_t + y}{4} + \frac{1}{2} \right) I\{2 < E\mu_t +y \}f(y) dy.
 \end{gather*}
 
-Отсюда можно получить рекурентное соотношение:
-\begin{gather*}
-  E \mu_{t} - E \mu_{t-1} =  - E\delta_t + 2 E\delta_t \cdot 
-    \begin{cases} 
-      (p-1) \cdot E\mu_{t-1}, \text{ если } -E\mu_{t-1} > w, \\
-      p \cdot E\mu_{t-1}, \text{ если } E\mu_{t-1} > w, \\
-      \frac{1}{4w} \left( 4 p w E\mu_{t-1} + (E \mu_{t-1} - w)^2 \right), \text{ если } |E\mu_{t-1}| \leq w.
-    \end{cases} 
-\end{gather*}
-
-Решением рекурентного соотношения являются:
-\begin{gather*}
-  E \mu_{t} = 
-    \begin{cases} 
-      \left(1 + 2 (p-1) E\delta_t \right)^t \cdot \mu_0 - E\delta_t\sum_{i=0}^{t-1}(1 + 2 (p-1) E\delta_t)^i , \text{ если } -E\mu_{t-1} > w, \\
-      \left( 2 p E\delta_t+ 1\right )^t \cdot \mu_0 + \sum_{i=0}^{t-1}(2 p E\delta_t+1)^i \cdot(1-2p)E\delta_t, \text{ если } E\mu_{t-1} > w, \\
-      ..., \text{ если } |E\mu_{t-1}| \leq w.
-    \end{cases} 
-\end{gather*}
-
-Рассмотрим в каком случае мы не покинем условие $-E \mu_{t-1} >w$. Для этого должно выполняться:
-\begin{gather*}
-  E \mu_{t} - E \mu_{t-1} = - E\delta_t + 2 E\delta_t \cdot (p-1) E\mu_{t-1} < 0 \Rightarrow  \\
-  E\mu_{t-1} < \frac{1}{2(p-1)}.
-\end{gather*}
-
-Аналогично получаем, что для выполнения $E\mu_{t-1} > w$ требуется:
-\begin{gather*}
-  E \mu_{t} - E \mu_{t-1} = -E\delta_t + 2 E\delta_t \cdot p E\mu_{t-1} > 0 \Rightarrow  \\
-  E\mu_{t-1} > \frac{1}{2p}.
-\end{gather*}
-Очевидно, при отсутствии шума, то есть при $p = 1$ условия всегда верны. 
-Поэтому будет наблюдаться монотонное поведения интереса.
-
-\section{Вычислительный эксперимент}
+\section{Вычислительный эксперимент }
 \paragraph{Описание данных и работы модели}
 Перед началом эксперимента фиксируются следующие параметры : $T$~--- кол-во итераций рекомендательной системы, $|M|$~--- кол-во рассматриваемых объектов для рекомендации, $l$~--- кол-во элементов в одной выдачи. 
 Также фиксируются параметры шума $p, w, u$.
@@ -226,6 +175,7 @@ $\mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t)$.
     \STATE save\_iter($t, c_t, \mu_t$)
   \ENDFOR
 \end{algorithmic}
+
 \section{Результаты}
 При определённом диапазоне параметров шума удалось про наблюдать эффект неограниченного роста интереса. 
 Наличие петель скрытой обратной связи иллюстрируется следующим графиком: 
@@ -256,6 +206,9 @@ $\mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t)$.
   \subfloat[]{\includegraphics[width=9cm]{3d_var_wp_max_interest.pdf}}
   \subfloat[]{\includegraphics[width=9cm]{countour_wp.pdf}}
 \end{figure}
+
+Весь экперимент и исходники расположены в гите: 
+\[  \text{\url{https://github.com/Intelligent-Systems-Phystech/2021-Project-74}}. \]
 
 \section{Заключение}
 Была поставлена задача существования петель скрытой обратной связи при наличии шума в ответах пользователя. 
