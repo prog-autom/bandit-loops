@@ -5,6 +5,7 @@
 \usepackage{caption}
 \usepackage{subfig}
 \newcommand{\hdir}{.}
+\newtheorem{statement}{Утверждение}
 
 \begin{document}
 
@@ -118,7 +119,10 @@ $\alpha_{t+1} = \alpha_t + c_t, \beta_{t+1} = \beta_t + 1 - c_t$.
 Также делается уточнений условий из [1]. 
 
 \section{Теоретическое обоснование}
-При достаточно большом $t$ бандин имеет очень узкое распределение, поэтому точно извествно, что он буде рекомендовать.
+\begin{statement}
+    При фиксированном $ p = 1$ и любых параметрах шума $w$ возникает петля скрытой обратной связи. 
+\end{statement}
+$\textbf{Доказательство. }$ При достаточно большом $t$ бандин имеет очень узкое распределение, поэтому точно извествно, что он буде рекомендовать.
 Для случая нормы интересов: 
 \begin{gather*}
   \|\mu_t - \mu_0 \|^2_2 = \sum_{i=1}^M (\mu_t^i - \mu_0^i)^2,
@@ -135,6 +139,7 @@ $\alpha_{t+1} = \alpha_t + c_t, \beta_{t+1} = \beta_t + 1 - c_t$.
   E (c_t | s_t = x, q_t = y) = 2 \sigma(x \cdot E \mu_{t-1} + y) - 1, \\
   E (E (c_t | s_t, q_t = y)) = p \cdot (2 \sigma(E \mu_{t-1} + y)) - 1) +  (1-p) \cdot (2 \sigma(- E\mu_{t-1} + y)) - 1).  
 \end{gather*}
+
 Далее для простоты считается, что $\sigma(x) \approx \text{ReLU}(x)$.
 Поэтому: 
 \begin{gather*}
@@ -211,16 +216,16 @@ $\mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t)$.
 
 \paragraph{Псевдокод}
 \begin{algorithmic}
-  \STATE Инициализируем $\mu_0^i, \alpha_0^i, \beta_0^i$.
+  \REQUIRE{M, l, T, w, p}
+  \STATE BanditLoopExperiment.prepare()
   \FOR{$t$ от $1$ до $T$} 
-    \STATE $r_t \leftarrow$ РекомендацияTS()
-    \STATE $c_t \leftarrow$ ГенерацияОткликаПользователя($r_t$)
-    \STATE ОбновлениеПараметровTS($c_t$)
-    \STATE ОбновлениеИнтересаПользователя($c_t$)
-    \STATE Сохранение($t, c_t, \mu_t$)
+    \STATE $r_t \leftarrow$ TSBandit.predict()
+    \STATE $c_t \leftarrow$ make\_response\_noise($r_t$, w, p)
+    \STATE TSBandit.update($c_t$)
+    \STATE Model.interest\_update($c_t$)
+    \STATE save\_iter($t, c_t, \mu_t$)
   \ENDFOR
 \end{algorithmic}
-
 \section{Результаты}
 При определённом диапазоне параметров шума удалось про наблюдать эффект неограниченного роста интереса. 
 Наличие петель скрытой обратной связи иллюстрируется следующим графиком: 
@@ -241,16 +246,18 @@ $\mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t)$.
 \end{center}
 
 Для случайной модели не наблюдается явного образования петли. 
-Она более хаотична и отстутствует тренд неограниченного роста интереса.   
+Она более хаотична, но тренд неограниченного роста интереса всё равно присутствует.   
 \begin{center}
-  \includegraphics[width=16cm]{norm_interest_random.pdf}
+  \includegraphics[width=16cm]{compare_random_and_ts.pdf}
 \end{center}
 
 
 \begin{figure}[ht]
-  \subfloat[]{\includegraphics[width=9cm]{plot_Ml.pdf}}
-  \subfloat[]{\includegraphics[width=9cm]{plot_wp.pdf}}
+  \subfloat[]{\includegraphics[width=9cm]{3d_var_wp_max_interest.pdf}}
+  \subfloat[]{\includegraphics[width=9cm]{countour_wp.pdf}}
 \end{figure}
+
+\section{Заключение}
 
 %%%% если имеется doi цитируемого источника, необходимо его указать, см. пример в \bibitem{article}
 %%%% DOI публикации, зарегистрированной в системе Crossref, можно получить по адресу http://www.crossref.org/guestquery/
