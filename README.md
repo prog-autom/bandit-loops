@@ -68,7 +68,7 @@ The script relies on mldev to run trials for a fixed set of parameters.
 
 Пример.
 
-Исходники кода находятся в [./code](./code) .  [main.py](./code/main.py) содержит запуск экспериментов.
+Исходники кода находятся в [./src](./code) .  [main.py](./code/main.py) содержит запуск экспериментов.
 [experiment.py](./code/experiment.py) содержит реализацию шаблона проведения эксперимента.
 Данные сохраняются при помощи [results.py](./code/results.py) для каждого проведённого эксперимента.
 [mathmodel.py](./code/mathmodel.py) cодержит основные компоненты для провдения экспериментов. .
