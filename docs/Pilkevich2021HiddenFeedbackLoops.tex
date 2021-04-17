@@ -2,6 +2,7 @@
 \usepackage{jmlda}
 \usepackage[]{algorithmic}
 \usepackage{graphicx}
+\usepackage{multicol}
 \usepackage{caption}
 \usepackage{subfig}
 \newcommand{\hdir}{.}
@@ -11,13 +12,13 @@
 
 \title
     [] % краткое название; не нужно, если полное название влезает в~колонтитул
-    {Условия существования петель скрытой обратной связи в рекомендательных системах}
+    {Условия существования петель скрытой обратной связи в рекомендательных системах с учётом шума}
 \author
     [А.\,А.~Пилькевич] % список авторов (не более трех) для колонтитула; не нужен, если основной список влезает в колонтитул
     {А.\,А.~Пилькевич, A.\,C.~Хританков} % основной список авторов, выводимый в оглавление
     [А.\,А.~Пилькевич$^1$, A.\,C.~Хританков$^2$] % список авторов, выводимый в заголовок; не нужен, если он не отличается от основного
 \email
-   {anton39reg@mail.ru; anton.khritankov@gmail.com}
+   {anton39reg@mail.ru; anton.khritankov@phystech.edu}
 %\thanks
 %    {Работа выполнена при
 %     %частичной
@@ -84,17 +85,18 @@
 После очередного набора рекомендаций $a_t~= (a_t^1, \dots, a_t^l)$ пользователь возвращает $\textit{отклик}$ $c_t~= (c_t^1, \dots, c_t^l), c_t^i \in \{0, 1\}$. 
 Предполагается, он выбирает элементы $c_t^i$ случайно и независимо, пропорционально $\mu_t(a)$.
 Значит отклик имеет распределение Бернулли : 
-\[c_t^i \sim Bern (\sigma(\mu_t(a_t^i))), \text{ где } \sigma(x) = \frac{1}{1+x}\text{~--- сигмоида }. \] 
+\[c_t^i \sim Bern (\sigma(\mu_t(a_t^i))), \text{ где } \sigma(x) = \frac{1}{1+e^x}\text{~--- сигмоида }. \] 
 
 Предполагаем, что интерес пользователя во времени описывается как 
 \begin{gather*}
   \begin{cases}
     \mu_{t+1} \geq \mu_{t}, \text{ если } c_t = 1,  \\
-    \mu_{t+1} < \mu_{t}, \text{ иначе}. 
+    \mu_{t+1} < \mu_{t}, \text{ если } c_t = 0, \\
+    \mu_{t+1} = \mu_t, \text{ если элемент не попал в рекомендацию}.
   \end{cases}
 \end{gather*}
 Тогда петля обратной связи выражается как \[ \lim_{t \to \infty} \|\mu_t - \mu_0 \|_2 = \infty. \]
-Обновление интереса происходит по правилу : 
+Обновление интереса для элементов очередной рекомендации происходит по правилу: 
 \[\mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t), \text{ где } \delta_t \sim U[0, 0.01].\]
 
 Оптимизационной задачей рекомендательной системы является задача минимизации потерь. 
@@ -133,21 +135,25 @@
 
 
 \section{Теоретическое обоснование}
+Назовём \textit{особым режимом} работы TS поведение алгоритма, в котором TS не меняются элементы рекомендаций.
+
 \begin{statement}
-  Пусть  $p=1$. Тогда при $w \geq 0 : \lim_{t \to \infty} \|\mu_t - \mu_0 \|_2 = \infty.$
+  Пусть  $p=1$ и TS работает в особом режиме начиная с какого-то момента времени $\tau$. Тогда при $w \geq 0 : \lim_{t \to \infty} \|\mu_t - \mu_0 \|_2 = \infty.$
 
   Или же при фиксированном $ p = 1$ и любых параметрах шума $w$ возникает петля скрытой обратной связи. 
 \end{statement}
-$\textbf{Доказательство. }$ При достаточно большом $t$ бандит имеет ограниченную дисперсию апостериорного распределния, поэтому точно извествно, что он будет рекомендовать.
+$\textbf{Доказательство. }$ 
+Так как алгоритм работает в особом режиме, то при $t \geq \tau$ точно извествно, что он будет рекомендовать.
 Для случая нормы интересов: 
 \begin{gather*}
   \|\mu_t - \mu_0 \|^2_2 = \sum_{i=1}^M (\mu_t^i - \mu_0^i)^2,
 \end{gather*}
-с ростом $t$ сновной вклад будут давать только $l$ объектов. 
+с ростом $t$ сновной вклад будут давать только $l < M$ объектов попавших в рекомендацию. 
+Причём эти объекты известны и не меняются для очередного шага. 
 
-Рассмотрим изменение интереса для произвольного фиксированного объекта $a \in M$. 
+Рассмотрим изменение интереса для произвольного $a \in M$. 
 Обновление интереса происходит согласно: $\mu_t - \mu_{t-1} = \delta_t c_t - \delta (1 - c_t)$.
-Случайные величины $\delta_t, c_t$ независимы, поэтому: \[\mathsf{E} \delta_t c_t = \mathsf{E} \delta_t \mathsf{E} c_t\]. 
+Случайные величины $\delta_t, c_t$ независимы, поэтому: \[\mathsf{E} \delta_t c_t = \mathsf{E} \delta_t \mathsf{E} c_t.\] 
 Для удобства будем считать, что у нас $c_t \sim \text{Bern}_{\pm}(\sigma(s_t \cdot \mu_t(a_t) + q_t))$
 Тогда: 
 \begin{gather*}
@@ -177,8 +183,10 @@ $\textbf{Доказательство. }$ При достаточно больш
 \begin{enumerate}
   \item $\mathsf{E} \mu_t + w < -2$. Тогда, очевидно:
     \begin{gather*}
-      \mathsf{E}\sigma(\mu_t) = 0.
+      \mathsf{E}\sigma(\mu_t) = 0 \to \mathsf{E}(\mathsf{E}(\mathsf{E}(c_t|s_t, q_t))) = -1.
     \end{gather*}
+    В этом случае интерес бесконечно убывает. 
+    Так как рассмытривается норма интересов, то всё равно $(\mu_t -\mu_0)^2 \to \infty$ при $t\to\infty$. 
 
   \item $\mathsf{E}\mu_t - w < -2 < \mathsf{E}\mu_t + w < 2$. Тогда:
     \begin{gather*}
@@ -249,7 +257,7 @@ $\mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t)$.
 В этом случае $l$ элементов для очередной рекомендации выбираются случайным образом. 
 
 В каждый момент выдачи $t$ фиксируются значения интереса $\mu_t^i$, сумма откликов $c_t^i$ и параметры апостериорного распределения. 
-По полученным данным строятся графики для определения наличия петель скрытой обратной связи (см. рис. ...).
+По полученным данным строятся графики для определения наличия петель скрытой обратной связи (см. рис.$~\ref{fig1}$).
 Как определялось раньше, петля скрытой обратной связи выражается так: $\lim_{t \to \infty} \|\mu_t - \mu_0 \|_2 = \infty$.
 
 \paragraph{Псевдокод проведения эксперимента}
@@ -266,34 +274,72 @@ $\mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t)$.
 \end{algorithmic}
 
 \section{Результаты}
-Наблюдается эффект неограниченного роста интереса. 
-Наличие петель скрытой обратной связи иллюстрируется следующим графиком: 
-\begin{center}
-  \includegraphics[width=16cm]{norm_interest.pdf}
-\end{center}
-Это согласуется с определением петель. 
+Из рис.$~\ref{fig1}$ видно, что наблюдается эффект неограниченного роста интереса. 
+Причём величина шума никак не ограничивает рост интереса, а лишь замедляет его, что согласуется с определением петли и утверждением 1. 
 
 Из графика суммы наград видно, что с определённого момента кривые начинают идти параллельно максимально возможной сумме. 
 Это свидетельствует о наличии петель обратной связи. 
-\begin{center}
-  \includegraphics[width=16cm]{rewards.pdf}
-\end{center}
+%\begin{center}
+%  \includegraphics[width=16cm]{rewards.pdf}
+%\end{center}
 
-Разброс значений нормы интересов. 
-\begin{center}
-  \includegraphics[width=16cm]{var_norm_interest.pdf}
-\end{center}
 
-Для случайной модели тоже наблюдается образование петли. 
+\begin{figure}[h]
+  \begin{multicols}{2}
+    \hfill
+    \includegraphics[width=9cm]{norm_interest.pdf}
+    \hfill
+    \caption{Логарифм нормы интереса на очередном шаге рекомендации.}
+    \label{fig1}
+    \hfill
+    \includegraphics[width=9cm]{rewards.pdf}
+    \hfill
+    \caption{Суммы наград на очередном шаге рекомендации.}
+    \label{fig2}
+  \end{multicols}
+\end{figure}
+
+% \begin{center} 
+%   \includegraphics[width=16cm]{var_norm_interest.pdf}
+% \end{center}
+
+Для случайной модели тоже наблюдается образование петли (см. рис.$~\ref{fig4}$). 
 Она более хаотична, но тренд неограниченного роста интереса всё равно присутствует.   
-\begin{center}
-  \includegraphics[width=16cm]{compare_random_and_ts.pdf}
-\end{center}
 
+\newpage
 
-\begin{figure}[ht]
-  \subfloat[]{\includegraphics[width=9cm]{3d_var_wp_max_interest.pdf}}
-  \subfloat[]{\includegraphics[width=9cm]{countour_wp.pdf}}
+\begin{figure}[h]
+  \begin{multicols}{2}
+    \hfill
+    \includegraphics[width=9cm]{var_norm_interest.pdf}
+    \hfill
+    \caption{Разброс логарифма нормы интереса от шага.}
+    \label{fig3}
+    \hfill
+    \includegraphics[width=9cm]{compare_random_and_ts.pdf}
+    \hfill
+    \caption{Сравнение случайного алгоритма и TS.}
+    \label{fig4}
+  \end{multicols}
+\end{figure}
+
+% \begin{center}
+%   \includegraphics[width=16cm]{compare_random_and_ts.pdf}
+% \end{center}
+
+\begin{figure}[h]
+  \begin{multicols}{2}
+    \hfill
+    \includegraphics[width=8cm]{3d_var_wp_max_interest.pdf}
+    \hfill
+    \caption{}
+    \label{fig5}
+    \hfill
+    \includegraphics[width=9cm]{countour_wp.pdf}
+    \hfill
+    \caption{}
+    \label{fig6}
+  \end{multicols}
 \end{figure}
 
 Весь экперимент и исходники расположены в гите: 
