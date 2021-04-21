@@ -36,8 +36,8 @@
   Экспериментально проверяются полученные условия в имитационной модели.
 
 \bigskip
-  The paper discovers hidden feedback loops in recommender systems. 
-  A positive feedback is an unlimeted growth of user interest in proposed objects.
+  The paper explores hidden feedback loops in recommender systems. 
+  A positive feedback loop is an unlimeted growth of user interest in proposed objects.
   The paper looks for conditions for positive feedback loops. 
   The paper takes into account a noise in user responses.
   The recommender system uses Thompson Sampling Multi-armed Bandit algorithm.
@@ -57,7 +57,7 @@
 \maketitle
 \linenumbers
 \section{Введение}
-Рекомендательные системы являются важной составляющей социальных сетей, веб-поиска и других сфер [5,6,7,8, 9]. 
+Рекомендательные системы являются важной составляющей социальных сетей, веб-поиска и других сфер [5,6,7,8,9]. 
 Рассматриваются петли скрытой обратной связи, которые подразумевает рост качества предсказаний, как результат учёта принятых решений. 
 Эффект петель скрытой обратной связи в реальных и модельных задачах в  публикациях [7,8,9] описывается как нежелательное явление. 
 Частные и часто рассматриваемые случаи скрытой обратной являются echo chamber и filter bubles [1,9].
@@ -144,20 +144,199 @@
 \alpha_{t+1} = \alpha_t + c_t, \beta_{t+1} = \beta_t + 1 - c_t.
 \end{equation}
 
-\paragraph{Учёт шума в поведении пользователя}
+\paragraph{Учёт аддитивного шума в поведении пользователя}
 Шум откликов описываeтся следующим образом: 
 \begin{gather*}
-  c_t^i \sim Bern \left(\sigma(s_t^i \cdot \mu_t(a_t^i) + q_t^i) \right), \\
-  P(s_t^i = 1) = p, \\ P(s_t^i = -1) = 1 - p, \\
+  c_t^i \sim Bern \left(\sigma(\mu_t(a_t^i) + q_t^i) \right), \\
   q_t^i \sim U[-w, w].
 \end{gather*}
 
-Наличие $q_t^i$ позволяет описать несмещённый аддитивный шум, то есть отклонение от истинного интереса пользователь. А $s_t^i$ описывает кардинальное изменение интереса на противоположный. 
-
+Наличие $q_t^i$ позволяет описать несмещённый аддитивный шум, то есть отклонение от истинного интереса пользователь. 
 
 \section{Теоретическое обоснование}
-Назовём \textit{особым режимом} работы TS поведение алгоритма, в котором TS не меняются элементы рекомендаций.
+Назовём \textit{режимом работы TS с фиксированными лидерами} поведение алгоритма, в котором TS не меняются элементы рекомендаций.
 
+\begin{statement}
+  Пусть  $p=1$ и TS работает в режиме c фиксированными лидереми начиная с какого-то момента времени $\tau$. Тогда при $w \geq 0 : \lim_{t \to \infty} \|\mu_t - \mu_0 \|_2 = \infty.$
+
+  Или же при фиксированном $ p = 1$ и любых параметрах шума $w$ возникает петля скрытой обратной связи. 
+\end{statement}
+ 
+\section{Вычислительный эксперимент }
+Целью эксперимента является подтвержедние существования петель скрытой обратной связи для произвольных параметров шума $w$. 
+Важной частью эксперимента является сравнения поведений рекомендательной системы с шумом в ответах пользователя и без. 
+
+\paragraph{Описание данных и работы модели}
+Перед началом эксперимента фиксируются следующие параметры: $T$~--- число итераций рекомендательной системы, $|M|$~--- число рассматриваемых объектов для рекомендации, $l$~--- число элементов в одной выдачи. 
+Также фиксируются параметры шума $p, w, u$.
+Далее случайным образом сэмплируются начальные значения интереса $\{\mu_0^i\}_{i=1}^{|M|}$. 
+Параметры априорного распеределения $\{\alpha_0^i, \beta_0^i\}_{i=1}^{|M|}$  также семплируются случайно.
+
+Генерация элементов очередной рекомендации производится на основе текущего апостериорного распределения. 
+Выбираются элементы с наибольшим значением. 
+Получение отклика от пользователя заключается в генерации случайных величин на основе рекомендации.
+Обновление параметров апостериорного распределения происходит по правилу~$\eqref{eq3}$. 
+Интерес обновляется согласно $\eqref{eq2}$.
+
+Также рассматривается вариант эксперимента, когда используется случайная модель генерации рекомендации. 
+В этом случае $l$ элементов для очередной рекомендации выбираются случайным образом. 
+
+В каждый момент выдачи $t$ фиксируются значения интереса $\mu_t^i$, сумма откликов $c_t^i$ и параметры апостериорного распределения. 
+По полученным данным строятся графики для определения наличия петель $\eqref{eq1}$ скрытой обратной связи (см. рис.$~\ref{fig1}$).
+
+\paragraph{Псевдокод проведения эксперимента}
+\begin{algorithmic}
+  \REQUIRE{M, l, T, w, p}
+  \STATE BanditLoopExperiment.prepare()
+  \FOR{$t$ от $1$ до $T$} 
+    \STATE $r_t \leftarrow$ TSBandit.predict()
+    \STATE $c_t \leftarrow$ make\_response\_noise($r_t$, w, p)
+    \STATE TSBandit.update($c_t$)
+    \STATE Model.interest\_update($c_t$)
+    \STATE save\_iter($t, c_t, \mu_t$)
+  \ENDFOR
+\end{algorithmic}
+
+\section{Результаты}
+На рис.$~\ref{fig1}$ изображена зависимость нормы разности начального значения интереса и интереса в момент времени $0 \leq t \leq 5000$, используется логарифмический масштаб 
+На рис.$~\ref{fig2}$ изображана сумма наград $c_t$.
+Рассматриваются различные параметры аддитивного шума $w$.
+Видно, что наблюдается эффект неограниченного роста интереса даже для больших значений шума. 
+Причём величина шума никак не ограничивает рост интереса, а лишь замедляет его, что согласуется с определением петли и утверждением 1. 
+
+
+\begin{figure}[h]
+  \begin{multicols}{2}
+    \hfill
+    \includegraphics[width=9cm]{norm_interest.pdf}
+    \hfill
+    \caption{Логарифм нормы интереса на очередном шаге рекомендации.}
+    \label{fig1}
+    \hfill
+    \includegraphics[width=9cm]{rewards.pdf}
+    \hfill
+    \caption{Суммы наград на очередном шаге рекомендации.}
+    \label{fig2}
+  \end{multicols}
+\end{figure}
+
+% \begin{center} 
+%   \includegraphics[width=16cm]{var_norm_interest.pdf}
+% \end{center}
+
+На рис.$~\ref{fig3}$ изображён разброс значений нормы интереса для 30 запусков эксперимента.
+
+На рис.$~\ref{fig4}$ сравниваются рекомендательные системы со случайным алгоритмом и TS.
+Для случайной модели тоже наблюдается образование петли (см. рис.$~\ref{fig4}$). 
+Она более хаотична, но тренд неограниченного роста интереса всё равно присутствует.   
+
+\begin{figure}[h]
+  \begin{multicols}{2}
+    \hfill
+    \includegraphics[width=9cm]{var_norm_interest.pdf}
+    \hfill
+    \caption{Разброс логарифма нормы интереса от шага.}
+    \label{fig3}
+    \hfill
+    \includegraphics[width=9cm]{compare_random_and_ts.pdf}
+    \hfill
+    \caption{Сравнение случайного алгоритма и TS.}
+    \label{fig4}
+  \end{multicols}
+\end{figure}
+
+% \begin{center}
+%   \includegraphics[width=16cm]{compare_random_and_ts.pdf}
+% \end{center}
+
+% \begin{figure}[h]
+%   \begin{multicols}{2}
+%     \hfill
+%     \includegraphics[width=8cm]{3d_var_wp_max_interest.pdf}
+%     \hfill
+%     \caption{Разброс значений максимального интереса на шаге $T=2000$ в зависимости от параметров шума $w, p$}
+%     \label{fig5}
+%     \hfill
+%     \includegraphics[width=9cm]{countour_wp.pdf}
+%     \hfill
+%     \caption{Значения максимального интереса на шаге $T=2000$ в зависимости от параметров шума $w, p$}
+%     \label{fig6}
+%   \end{multicols}
+% \end{figure}
+
+% На рис.$~\ref{fig4},~\ref{fig5}$ отоброженно влияние параметров шума на интерес. 
+% Можно видеть, что увеличение шума замедляет рост интереса. 
+% Это согласуется с полученным утверждением и рис$~\ref{fig1}$.
+
+\newpage
+
+\section{Заключение}
+Поставлена задача существования петель скрытой обратной связи при наличии шума в ответах пользователя. 
+Для текущей модели шума было получено, что при любых параметрах возникают петли. 
+Это также подверждается в эксперименте.
+
+В дальнейшем требуется проверить гипотезу о возникновении петель при любом несмещённом аддитивном шума. 
+Также стоит расмотреть другие модели шума. 
+Так как после определённого значения интереса из-за сигмоиды любое влияние шума сводилось на нет. 
+%%%% если имеется doi цитируемого источника, необходимо его указать, см. пример в \bibitem{article}
+%%%% DOI публикации, зарегистрированной в системе Crossref, можно получить по адресу http://www.crossref.org/guestquery/
+\begin{thebibliography}{99}
+\bibitem{webArticle}
+    \BibAuthor{Ray~Jiang, Silvia~Chiappa, Tor~Lattimore,Andr{\'a}s Gy{\"o}rgy, Pushmeet~Kohli}
+    Degenerate Feedback Loops in Recommender Systems//
+    \BibJournal{CoRR}, 2019, Vol. abs/1902.10730,
+	  URL: \BibUrl{https://arxiv.org/abs/1902.10730}.
+
+\bibitem{Article}
+    \BibAuthor{Khritankov, Anton}
+    Hidden Feedback Loops in Machine Learning Systems: A simulation Model and Preliminary Results//
+    \BibJournal{Springer}, 2021, P.~54--65.
+
+\bibitem{webArticle}
+    \BibAuthor{Daniel Russo, Benjamin Van Roy, Abbas Kazerouni, Ian Osband}
+    A Tutorial on Thompson Sampling//
+    \BibJournal{CoRR}, 2017, Vol. abs/1707.02038,
+	  URL: \BibUrl{https://arxiv.org/abs/1707.02038}.
+
+\bibitem{webArticle}
+    \BibAuthor{Shipra Agrawal, Navin Goyal}
+    Analysis of Thompson Sampling for the multi-armed//
+    \BibJournal{CoRR}, 2011, Vol. abs/1111.1797,
+	  URL: \BibUrl{https://arxiv.org/abs/1111.1797}.
+
+\bibitem{Article}
+    \BibAuthor{Giuseppe Burtini, Jason L. Loeppky, Ramon Lawrence}    
+    Improving Online Marketing Experiments with Drifting Multi-armed Bandits//
+    \BibJournal{SciTePress}, 2018, P.~630--636.
+
+\bibitem{webArticle}
+    \BibAuthor{David Krueger and Tegan Maharaj and Jan Leike}    
+    Hidden Incentives for Auto-Induced Distributional Shift//
+    \BibJournal{CoRR}, 2020, Vol. abs/2009.09153.
+
+\bibitem{webArticle}
+    \BibAuthor{Wilbert Samuel Rossi, Jan Willem Polderman, Paolo Frasca}    
+    The closed loop between opinion formation and personalised recommendations//
+    \BibJournal{CoRR}, 2018, Vol. abs/1809.04644.
+
+\bibitem{Article}
+    \BibAuthor{Pedreschi, D. and Miliou, I. and European Parliament. Directorate-General for Internal Policies of the Union}    
+    Artificial Intelligence (AI): new developments and innovations applied to e-commerce//
+    \BibJournal{European Parliament}, 2020.
+
+\bibitem{Article}
+    \BibAuthor{Dominic DiFranzo, Kristine Gloria-Garcia}    
+    Filter bubbles and fake news//
+    \BibJournal{XRDS}, 2017.
+
+\bibitem{webArticle}
+    \BibAuthor{Пилькевич Антон, Хританков Антон}    
+    Условие существования петель скрытой обратной связи в рекомендательных системах с учётом шума//
+    %\BibJournal{CoRR}, 2011, Vol. abs/1111.1797,
+	  URL: \BibUrl{github.com/Intelligent-Systems-Phystech/2021-Project-74}.
+\end{thebibliography}
+
+\section{Приложение}
 \begin{statement}
   Пусть  $p=1$ и TS работает в особом режиме начиная с какого-то момента времени $\tau$. Тогда при $w \geq 0 : \lim_{t \to \infty} \|\mu_t - \mu_0 \|_2 = \infty.$
 
@@ -257,170 +436,19 @@ $\textbf{Доказательство. }$
       \mathsf{E}\sigma(\mu_t) = 1 > \frac{1}{2}.
     \end{gather*}
 \end{enumerate}
- 
-\section{Вычислительный эксперимент }
-Целью эксперимента является подтвержедние существования петель скрытой обратной связи для произвольных параметров шума $w$. 
-Важной частью эксперимента является сравнения поведений рекомендательной системы с шумом в ответах пользователя и без. 
 
-\paragraph{Описание данных и работы модели}
-Перед началом эксперимента фиксируются следующие параметры: $T$~--- число итераций рекомендательной системы, $|M|$~--- число рассматриваемых объектов для рекомендации, $l$~--- число элементов в одной выдачи. 
-Также фиксируются параметры шума $p, w, u$.
-Далее случайным образом сэмплируются начальные значения интереса $\{\mu_0^i\}_{i=1}^{|M|}$. 
-Параметры априорного распеределения $\{\alpha_0^i, \beta_0^i\}_{i=1}^{|M|}$  также семплируются случайно.
-
-Генерация элементов очередной рекомендации производится на основе текущего апостериорного распределения. 
-Выбираются элементы с наибольшим значением. 
-Получение отклика от пользователя заключается в генерации случайных величин на основе рекомендации.
-Обновление параметров апостериорного распределения происходит по правилу~$\eqref{eq3}$. 
-Интерес обновляется согласно $\eqref{eq2}$.
-
-Также рассматривается вариант эксперимента, когда используется случайная модель генерации рекомендации. 
-В этом случае $l$ элементов для очередной рекомендации выбираются случайным образом. 
-
-В каждый момент выдачи $t$ фиксируются значения интереса $\mu_t^i$, сумма откликов $c_t^i$ и параметры апостериорного распределения. 
-По полученным данным строятся графики для определения наличия петель $\eqref{eq1}$ скрытой обратной связи (см. рис.$~\ref{fig1}$).
-
-\paragraph{Псевдокод проведения эксперимента}
-\begin{algorithmic}
-  \REQUIRE{M, l, T, w, p}
-  \STATE BanditLoopExperiment.prepare()
-  \FOR{$t$ от $1$ до $T$} 
-    \STATE $r_t \leftarrow$ TSBandit.predict()
-    \STATE $c_t \leftarrow$ make\_response\_noise($r_t$, w, p)
-    \STATE TSBandit.update($c_t$)
-    \STATE Model.interest\_update($c_t$)
-    \STATE save\_iter($t, c_t, \mu_t$)
-  \ENDFOR
-\end{algorithmic}
-
-\section{Результаты}
-Из рис.$~\ref{fig1}$ видно, что наблюдается эффект неограниченного роста интереса. 
-Причём величина шума никак не ограничивает рост интереса, а лишь замедляет его, что согласуется с определением петли и утверждением 1. 
-
-
-\begin{figure}[h]
-  \begin{multicols}{2}
-    \hfill
-    \includegraphics[width=9cm]{norm_interest.pdf}
-    \hfill
-    \caption{Логарифм нормы интереса на очередном шаге рекомендации.}
-    \label{fig1}
-    \hfill
-    \includegraphics[width=9cm]{rewards.pdf}
-    \hfill
-    \caption{Суммы наград на очередном шаге рекомендации.}
-    \label{fig2}
-  \end{multicols}
-\end{figure}
-
-% \begin{center} 
-%   \includegraphics[width=16cm]{var_norm_interest.pdf}
-% \end{center}
-
-Для случайной модели тоже наблюдается образование петли (см. рис.$~\ref{fig4}$). 
-Она более хаотична, но тренд неограниченного роста интереса всё равно присутствует.   
-
-
-\begin{figure}[h]
-  \begin{multicols}{2}
-    \hfill
-    \includegraphics[width=9cm]{var_norm_interest.pdf}
-    \hfill
-    \caption{Разброс логарифма нормы интереса от шага.}
-    \label{fig3}
-    \hfill
-    \includegraphics[width=9cm]{compare_random_and_ts.pdf}
-    \hfill
-    \caption{Сравнение случайного алгоритма и TS.}
-    \label{fig4}
-  \end{multicols}
-\end{figure}
-
-% \begin{center}
-%   \includegraphics[width=16cm]{compare_random_and_ts.pdf}
-% \end{center}
-
-\begin{figure}[h]
-  \begin{multicols}{2}
-    \hfill
-    \includegraphics[width=8cm]{3d_var_wp_max_interest.pdf}
-    \hfill
-    \caption{Разброс значений максимального интереса на шаге $T=2000$ в зависимости от параметров шума $w, p$}
-    \label{fig5}
-    \hfill
-    \includegraphics[width=9cm]{countour_wp.pdf}
-    \hfill
-    \caption{Значения максимального интереса на шаге $T=2000$ в зависимости от параметров шума $w, p$}
-    \label{fig6}
-  \end{multicols}
-\end{figure}
-
-На рис.$~\ref{fig4},~\ref{fig5}$ отоброженно влияние параметров шума на интерес. 
-Можно видеть, что увеличение шума замедляет рост интереса. 
-Это согласуется с полученным утверждением и рис$~\ref{fig1}$.
-
-Весь экперимент и исходники расположены в гите: 
-\[  \text{\url{https://github.com/Intelligent-Systems-Phystech/2021-Project-74}}. \]
-
-\section{Заключение}
-Поставлена задача существования петель скрытой обратной связи при наличии шума в ответах пользователя. 
-Для текущей модели шума было получено, что при любых параметрах возникают петли. 
-Это также подверждается в эксперименте.
-
-В дальнейшем требуется проверить гипотезу о возникновении петель при любом несмещённом аддитивном шума. 
-Также стоит расмотреть другие модели шума. 
-Так как после определённого значения интереса из-за сигмоиды любое влияние шума сводилось на нет. 
-%%%% если имеется doi цитируемого источника, необходимо его указать, см. пример в \bibitem{article}
-%%%% DOI публикации, зарегистрированной в системе Crossref, можно получить по адресу http://www.crossref.org/guestquery/
-\begin{thebibliography}{99}
-\bibitem{webArticle}
-    \BibAuthor{Ray~Jiang, Silvia~Chiappa, Tor~Lattimore,Andr{\'a}s Gy{\"o}rgy, Pushmeet~Kohli}
-    Degenerate Feedback Loops in Recommender Systems//
-    \BibJournal{CoRR}, 2019, Vol. abs/1902.10730,
-	  URL: \BibUrl{https://arxiv.org/abs/1902.10730}.
-
-\bibitem{Article}
-    \BibAuthor{Khritankov, Anton}
-    Hidden Feedback Loops in Machine Learning Systems: A simulation Model and Preliminary Results//
-    \BibJournal{Springer}, 2021, P.~54--65.
-
-\bibitem{webArticle}
-    \BibAuthor{Daniel Russo, Benjamin Van Roy, Abbas Kazerouni, Ian Osband}
-    A Tutorial on Thompson Sampling//
-    \BibJournal{CoRR}, 2017, Vol. abs/1707.02038,
-	  URL: \BibUrl{https://arxiv.org/abs/1707.02038}.
-
-\bibitem{webArticle}
-    \BibAuthor{Shipra Agrawal, Navin Goyal}
-    Analysis of Thompson Sampling for the multi-armed//
-    \BibJournal{CoRR}, 2011, Vol. abs/1111.1797,
-	  URL: \BibUrl{https://arxiv.org/abs/1111.1797}.
-
-\bibitem{Article}
-    \BibAuthor{Giuseppe Burtini, Jason L. Loeppky, Ramon Lawrence}    
-    Improving Online Marketing Experiments with Drifting Multi-armed Bandits//
-    \BibJournal{SciTePress}, 2018, P.~630--636.
-
-\bibitem{webArticle}
-    \BibAuthor{David Krueger and Tegan Maharaj and Jan Leike}    
-    Hidden Incentives for Auto-Induced Distributional Shift//
-    \BibJournal{CoRR}, 2020, Vol. abs/2009.09153.
-
-\bibitem{webArticle}
-    \BibAuthor{Wilbert Samuel Rossi, Jan Willem Polderman, Paolo Frasca}    
-    The closed loop between opinion formation and personalised recommendations//
-    \BibJournal{CoRR}, 2018, Vol. abs/1809.04644.
-
-\bibitem{Article}
-    \BibAuthor{Pedreschi, D. and Miliou, I. and European Parliament. Directorate-General for Internal Policies of the Union}    
-    Artificial Intelligence (AI): new developments and innovations applied to e-commerce//
-    \BibJournal{European Parliament}, 2020.
-
-\bibitem{Article}
-    \BibAuthor{Dominic DiFranzo, Kristine Gloria-Garcia}    
-    Filter bubbles and fake news//
-    \BibJournal{XRDS}, 2017.
-\end{thebibliography}
+Во всех случаях при заданных условиях удалось отделить от нуля изменение интереса: 
+\[
+  \mathsf{E}(\mu_{t} - \mu_{t-1}) = \mathsf{E}\delta_t \cdot \mathsf{E}(\mathsf{E}(\mathsf{E}(c_t|s_t, q_t))) > 0.
+\]
+Поэтому существет $m > 0$ такое, что 
+\[
+  \mathsf{E}(\mu_{t} - \mu_{t-1}) = \mathsf{E}\delta_t \cdot \mathsf{E}(\mathsf{E}(\mathsf{E}(c_t|s_t, q_t))) > m > 0.
+\]
+Тогда 
+\[\mathsf{E}^2(\mu_{t} - \mu_{0}) > t^2 \cdot m^2 \to \infty \text{ при } t \to \infty.\]
+Раз одно слагомое стремится к бесконечности, то:
+\[\mathsf{E}\|\mu_t - \mu_0 \|^2_2 \to \infty \text{ при } t \to \infty.\]
 
 %%%% если имеется doi цитируемого источника, необходимо его указать, см. пример в \bibitem{article}
 %%%% DOI публикации, зарегистрированной в системе Crossref, можно получить по адресу http://www.crossref.org/guestquery/.
