@@ -180,8 +180,8 @@ class BanditLoopExperiment:
             cur_bandit_params = self.bandit.update(cur_actions, cur_response)
             interest_update  = Model.get_interest_update(
                     l=self.bandit.l, M=self.bandit.M, actions=cur_actions, response=cur_response, 
-                    win_streak=self.win_streak,
-                    lose_streak=self.lose_streak,
+                    win_streak=self.win_streak*(cur_interest > 0),
+                    lose_streak=self.lose_streak*(cur_interest < 0),
                     b=self.b)    
     
             cur_interest = cur_interest + interest_update
