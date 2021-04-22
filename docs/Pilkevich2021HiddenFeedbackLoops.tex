@@ -153,13 +153,28 @@
 
 Наличие $q_t^i$ позволяет описать несмещённый аддитивный шум, то есть отклонение от истинного интереса пользователь. 
 
+\paragraph{Накопительный шум в поведении пользователя}
+В этом случае шум откликов описываeтся следующим образом: 
+\begin{gather*}
+  c_t^i \sim Bern \left(\sigma(\mu_t(a_t^i)) \right). \\
+\end{gather*}
+Но обновление интереса для элементов очередной рекомендации происходит по правилу: 
+\begin{gather*}  
+  \mu_{t+1} - \mu_{t} = 
+  \begin{cases} 
+    \delta_t c_t  - \delta_t (1 - c_t) \cdot (1 + b \cdot s_t), \text{ если } \mu_t > 0, \\
+    \delta_t c_t \cdot (1 + b \cdot l_t) - \delta_t (1 - c_t), \text{ если } \mu_t < 0, \\
+  \end{cases} \\
+  \delta_t \sim U[0, 0.01], \\
+  s_t = \max \{0 \leq k \leq t \mid c_{t} = 1, \dots, c_{t-k} = 1, c_{t-k-1} = 0 \},\\
+  l_t = \max \{0 \leq k \leq t \mid c_{t} = 0, \dots, c_{t-k} = 0, c_{t-k-1} = 1 \}.\\
+\end{gather*}
+
 \section{Теоретическое обоснование}
 Назовём \textit{режимом работы TS с фиксированными лидерами} поведение алгоритма, в котором TS не меняются элементы рекомендаций.
 
 \begin{statement}
-  Пусть  $p=1$ и TS работает в режиме c фиксированными лидереми начиная с какого-то момента времени $\tau$. Тогда при $w \geq 0 : \lim_{t \to \infty} \|\mu_t - \mu_0 \|_2 = \infty.$
-
-  Или же при фиксированном $ p = 1$ и любых параметрах шума $w$ возникает петля скрытой обратной связи. 
+  Пусть  TS работает в режиме c фиксированными лидереми начиная с какого-то момента времени $\tau$. Тогда при $w \geq 0 : \lim_{t \to \infty} \|\mu_t - \mu_0 \|_2 = \infty.$
 \end{statement}
  
 \section{Вычислительный эксперимент }
@@ -338,9 +353,7 @@
 
 \section{Приложение}
 \begin{statement}
-  Пусть  $p=1$ и TS работает в особом режиме начиная с какого-то момента времени $\tau$. Тогда при $w \geq 0 : \lim_{t \to \infty} \|\mu_t - \mu_0 \|_2 = \infty.$
-
-  Или же при фиксированном $ p = 1$ и любых параметрах шума $w$ возникает петля скрытой обратной связи. 
+  Пусть TS работает в особом режиме начиная с какого-то момента времени $\tau$. Тогда при $w \geq 0 : \lim_{t \to \infty} \|\mu_t - \mu_0 \|_2 = \infty.$
 \end{statement}
 $\textbf{Доказательство. }$ 
 Так как алгоритм работает в особом режиме, то при $t \geq \tau$ извествно какие объекты он будет рекомендовать.
@@ -354,19 +367,18 @@ $\textbf{Доказательство. }$
 Рассмотрим изменение интереса для произвольного $a \in M$. 
 Обновление интереса происходит согласно: $\mu_t - \mu_{t-1} = \delta_t c_t - \delta (1 - c_t)$.
 Случайные величины $\delta_t, c_t$ независимы, поэтому: \[\mathsf{E} \delta_t c_t = \mathsf{E} \delta_t \mathsf{E} c_t.\] 
-Для удобства будем считать, что у нас $c_t \sim \text{Bern}_{\pm}(\sigma(s_t \cdot \mu_t(a_t) + q_t))$
+Для удобства будем считать, что у нас $c_t \sim \text{Bern}_{\pm}(\sigma(\mu_t(a_t) + q_t))$
 Тогда: 
 \begin{gather*}
-  \mathsf{E} (c_t | s_t = x, q_t = y) = 2 \sigma(x \cdot \mathsf{E} \mu_{t-1} + y) - 1, \\
-  \mathsf{E} (\mathsf{E} (c_t | s_t, q_t = y)) = p \cdot (2 \sigma(\mathsf{E} \mu_{t-1} + y)) - 1) +  (1-p) \cdot (2 \sigma(- \mathsf{E}\mu_{t-1} + y)) - 1).  
+  \mathsf{E} (c_t |q_t = y) = 2 \sigma(\mathsf{E} \mu_{t-1} + y) - 1, \\
 \end{gather*}
 
-В случае $\mathsf{E}(\mathsf{E}(\mathsf{E}(c_t|s_t, q_t))) > 0$ петля будет возникать, так как рост интереса в среднем положителен. 
+В случае $\mathsf{E}(\mathsf{E}(c_t|q_t)) > 0$ петля будет возникать, так как рост интереса в среднем положителен. 
 
 Далее для простоты считается, что $\sigma(x) \approx \left(\frac{x}{4} + \frac{1}{2} \right) \cdot I[-2, 2] + I[2, \infty]$ и $p = 1$.
 Задача в этом случае записывается так:
 \begin{gather*}
-  \mathsf{E} (\mathsf{E} (c_t | s_t, q_t = y)) \approx  2 \left(\frac{\mathsf{E} \mu_{t-1} + y}{4} + \frac{1}{2}\right) - 1.   
+  \mathsf{E} (c_t |q_t = y) \approx  2 \left(\frac{\mathsf{E} \mu_{t-1} + y}{4} + \frac{1}{2}\right) - 1.   
 \end{gather*}
 Теперь петля возникает при условии: $\mathsf{E}\sigma(x) > \frac{1}{2}$. 
 
@@ -383,7 +395,7 @@ $\textbf{Доказательство. }$
 \begin{enumerate}
   \item $\mathsf{E} \mu_t + w < -2$. Тогда, очевидно:
     \begin{gather*}
-      \mathsf{E}\sigma(\mu_t) = 0 \to \mathsf{E}(\mathsf{E}(\mathsf{E}(c_t|s_t, q_t))) = -1.
+      \mathsf{E}\sigma(\mu_t) = 0 \to \mathsf{E}(\mathsf{E}(c_t|q_t)) = -1.
     \end{gather*}
     В этом случае интерес бесконечно убывает. 
     Так как рассмытривается норма интересов, то всё равно $(\mu_t -\mu_0)^2 \to \infty$ при $t\to\infty$. 
@@ -439,11 +451,11 @@ $\textbf{Доказательство. }$
 
 Во всех случаях при заданных условиях удалось отделить от нуля изменение интереса: 
 \[
-  \mathsf{E}(\mu_{t} - \mu_{t-1}) = \mathsf{E}\delta_t \cdot \mathsf{E}(\mathsf{E}(\mathsf{E}(c_t|s_t, q_t))) > 0.
+  \mathsf{E}(\mu_{t} - \mu_{t-1}) = \mathsf{E}\delta_t \cdot \mathsf{E}(\mathsf{E}(c_t|q_t)) > 0.
 \]
 Поэтому существет $m > 0$ такое, что 
 \[
-  \mathsf{E}(\mu_{t} - \mu_{t-1}) = \mathsf{E}\delta_t \cdot \mathsf{E}(\mathsf{E}(\mathsf{E}(c_t|s_t, q_t))) > m > 0.
+  \mathsf{E}(\mu_{t} - \mu_{t-1}) = \mathsf{E}\delta_t \cdot \mathsf{E}(\mathsf{E}(c_t|q_t)) > m > 0.
 \]
 Тогда 
 \[\mathsf{E}^2(\mu_{t} - \mu_{0}) > t^2 \cdot m^2 \to \infty \text{ при } t \to \infty.\]
