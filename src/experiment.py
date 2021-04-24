@@ -167,7 +167,7 @@ class BanditLoopExperiment:
             self.interest.append(interest)
 
         cur_interest = self.init_interest
-
+        
         for t in range(T):
             cur_probabilities, cur_actions = self.bandit.predict()
             
