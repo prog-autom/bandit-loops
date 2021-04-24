@@ -33,6 +33,8 @@ class BanditNoiseLoopModel:
     def get_interest_update(l, M, actions, response, win_streak, lose_streak, b):
         bias = sps.uniform(0, 0.01).rvs(l)
         new_interest = np.zeros(M)
-        new_interest[actions] += (response * bias * (1 + b*lose_streak[actions]) - 
-                bias * (1 - response) * (1 + b*win_streak[actions])) 
+        tmp_lose_streak = lose_streak[actions] - (lose_streak[actions] > 0 )
+        tmp_win_streak = win_streak[actions] - (win_streak[actions] > 0 )
+        new_interest[actions] += (response * bias * (1 + b*tmp_lose_streak) - 
+                bias * (1 - response) * (1 + b*tmp_win_streak)) 
         return new_interest
