@@ -42,17 +42,20 @@
 \begin{block}{Задача}
   Нахождение математического описания условий возникновения петель и экспериментальная их проверка. 
 \end{block}
+\begin{block}{Решение}
+  Усреденение смещение интереса и анализ зависимости от параметров шума. 
+  Моделирование рекомендательной системы и поведения пользователя.
+\end{block}
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
-\begin{frame}{Cуществование петель при параметрах шума $w, Q$}
+\begin{frame}{Петли при параметрах шума $w, Q$}
 
 Распределение отклика $c_t^i$ для рекомендации $\mathbf{a_t}$:
 \begin{gather*}
-    c_t^i \sim \text{Bern} \left(\sigma\left( \color{red} s_t^i \color{black} \cdot \mu_t^i (a_t^i) + \mathbin{\color{red} q_t^i } \right) \right), \\ 
+    c_t^i \sim \text{Bern} \left(\sigma\left(\mu_t^i (a_t^i) + \mathbin{\color{red} q_t^i } \right) \right), \\ 
     \mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t), 
 \end{gather*}
-где $s_t^i \sim \text{Bern}_{\pm 1}(p), q_t^i \sim \text{U}[-w, w], \delta_t \sim U[0, 0.01].$
-Рекомендации семплируются алгоритмом MAB TS.
+где $q_t^i \sim \text{U}[-w, w], \delta_t \sim U[0, 0.01].$
 
 \begin{columns}[c]
 \column{0.3\textwidth}
@@ -70,47 +73,62 @@
 
 %----------------------------------------------------------------------------------------------------------
 \begin{frame}{Публикации по теме}
-\begin{thebibliography}{4}
-\bibitem{webArticle}
-    \BibAuthor{Ray~Jiang, Silvia~Chiappa, Tor~Lattimore,Andr{\'a}s Gy{\"o}rgy, Pushmeet~Kohli.}
-    Degenerate Feedback Loops in Recommender Systems//
+\begin{enumerate}
+    \item
+      \textcolor{black}{Ray~Jiang, Silvia~Chiappa, Tor~Lattimore,Andr{\'a}s Gy{\"o}rgy, Pushmeet~Kohli.}
+      \textcolor{blue}{Degenerate Feedback Loops in Recommender Systems}.
     \BibJournal{CoRR}, 2019, Vol. abs/1902.10730,
 	  URL: \BibUrl{https://arxiv.org/abs/1902.10730}.
 
-\bibitem{Article}
-    \BibAuthor{Khritankov, Anton.}
-    Hidden Feedback Loops in Machine Learning Systems: A simulation Model and Preliminary Results//
+  \item
+    \textcolor{black}{Khritankov, Anton.}
+    \textcolor{blue}{Hidden Feedback Loops in Machine Learning Systems: A simulation Model and Preliminary Results}//
     \BibJournal{Springer}, 2021, P.~54--65.
 
-\bibitem{webArticle}
-    \BibAuthor{Daniel Russo, Benjamin Van Roy, Abbas Kazerouni, Ian Osband.}
-    A Tutorial on Thompson Sampling//
+  \item
+    \textcolor{black}{Daniel Russo, Benjamin Van Roy, Abbas Kazerouni, Ian Osband.}
+    \textcolor{blue}{A Tutorial on Thompson Sampling}//
     \BibJournal{CoRR}, 2017, Vol. abs/1707.02038,
 	  URL: \BibUrl{https://arxiv.org/abs/1707.02038}.
 
-\bibitem{webArticle}
-    \BibAuthor{Shipra Agrawal, Navin Goyal.}
-    Analysis of Thompson Sampling for the multi-armed//
+  \item
+    \textcolor{black}{Shipra Agrawal, Navin Goyal.}
+    \textcolor{blue}{Analysis of Thompson Sampling for the multi-armed}//
     \BibJournal{CoRR}, 2011, Vol. abs/1111.1797,
 	  URL: \BibUrl{https://arxiv.org/abs/1111.1797}.
-
-\end{thebibliography}
+  \end{enumerate}
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
 \begin{frame}{Модель данных}
-  \begin{block}{Гиперпараметры}
+  \begin{block}{Параметры}
   Множество объектов $M$, рекомендации $(a^1, \dots, a^l) \in M$, кол-во выдач $T$.
   Задаётся ф-ия описывающая интерес пользователя  в начальный момент времени $\mu_0 : M \to \mathbb{R}$.
+\bigskip
 \end{block}
-\begin{block}{Отклик}  
-  Распределение откликов:   \begin{gather*}
-    c_t^i \sim \text{Bern} \left(\sigma\left( \color{red} s_t^i \color{black} \cdot \mu_t^i (a_t^i) + \mathbin{\color{red} q_t^i } \right) \right), \\ 
-    s_t^i \sim \text{Bern}_{\pm 1}(p), \\ q_t^i \sim U[-w, w].
+
+\begin{columns}[T]
+\column{0.5\textwidth}
+\textcolor{blue}{Распределениее откликов:}   
+\begin{gather*}
+    c_t^i \sim \text{Bern} \left(\sigma\left(\mu_t^i (a_t^i) + \mathbin{\color{red} q_t^i } \right) \right), \\ 
+    q_t^i \sim U[-w, w].
   \end{gather*}
-\end{block}
+\column{0.5\textwidth}
+\textcolor{blue}{Эволюция интереса:}   
+  \begin{gather*}
+\mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t), \\
+\delta_t \sim U[0, 0.01].
+  \end{gather*}
+\end{columns}
+
+\bigskip
+\textcolor{blue}{Определение петли}:
+\begin{gather*}
+  \color{red} \lim_{t \to \infty} \|\mu_t - \mu_0 \|_2 = \infty.
+\end{gather*}
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
-\begin{frame}{MAB TS}
+\begin{frame}{Thompson Sampling}
 Априорное распределение для параметров интереса: 
 \[Beta(1, 1) = U[0, 1].\] 
 Апостериорное распределение для элемента $a^i \in M$ описывается $Beta(\alpha_t^i, \beta_t^i)$. 
@@ -123,23 +141,12 @@
 \end{gather*}
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
-\begin{frame}{Эволюция во времени}
-
-  Эволюция интереса:
-  \begin{gather*}
-\mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t). 
-  \end{gather*}
-  Определение петли:
-\begin{gather*}
-  \color{red} \lim_{t \to \infty} \|\mu_t - \mu_0 \|_2 = \infty.
-\end{gather*}
-\end{frame}
-%----------------------------------------------------------------------------------------------------------
-\begin{frame}{Решение}
+\begin{frame}{Возникновение петли}
+Назовём \textit{режимом работы TS с фиксированными лидерами} поведение алгоритма, в котором TS не меняются элементы рекомендаций.
   \begin{block}{Утверждение}
-    При фиксированном $\color{red} p = 1$ и любых параметрах шума $\color{red} w$ возникает петля скрытой обратной связи. 
+  Пусть  TS работает в режиме c фиксированными лидереми начиная с какого-то момента времени $\tau$ и используется аддитивная модель шума. 
   \end{block}
-  \begin{block}{Гипотезы}
+  \begin{block}{Анализ}
   \begin{itemize}
       \item Любой несмещённый аддитивный шум не влияет на возникновение петли. 
       \item При достаточно большом значение $\mu_t$ из-за $\sigma (x)$ шум $w$ перестаёт сколько-то значимо изменять истинный интерес. 
@@ -184,39 +191,42 @@
 
 \end{frame}
 %------------------------------------------------------------------------------------
-\begin{frame}{Анализ ошибки}
-Распределение интереса от параметров шума $w, p$ после $2000$ итераций.
-\begin{columns}[c]
-\column{0.5\textwidth}
-\begin{center}
-  \includegraphics[width=6cm]{../3d_var_wp_max_interest.pdf}
-\end{center}
-\column{0.5\textwidth}
-\begin{center}
-  \includegraphics[width=6cm]{../countour_wp.pdf}
-\end{center}
-\end{columns}
-\end{frame}
+% \begin{frame}{Анализ ошибки}
+% Распределение интереса от параметров шума $w, p$ после $2000$ итераций.
+% \begin{columns}[c]
+% \column{0.5\textwidth}
+% \begin{center}
+%   \includegraphics[width=6cm]{../3d_var_wp_max_interest.pdf}
+% \end{center}
+% \column{0.5\textwidth}
+% \begin{center}
+%   \includegraphics[width=6cm]{../countour_wp.pdf}
+% \end{center}
+% \end{columns}
+% \end{frame}
 %------------------------------------------------------------------------------------
 \begin{frame}{Анализ ошибки}
+\begin{columns}[T]
+\column{0.5\textwidth}
+
 Разброс нормы интереса
 \begin{center}
-  \includegraphics[width=8cm]{../var_norm_interest.pdf}
+  \includegraphics[width=6cm]{../var_norm_interest.pdf}
 \end{center}
-\end{frame}
-%------------------------------------------------------------------------------------
-\begin{frame}{Сравнение моделей}
-Сравнивается MAB TS и рандомный алгоритм, то есть очередная рекомендация выбирается случайно.
+\column{0.5\textwidth}
+
+Сравнивается MAB TS и рандомный алгоритм.
 \begin{center}
-  \includegraphics[width=8cm]{../compare_random_and_ts.pdf}
+  \includegraphics[width=6cm]{../compare_random_and_ts.pdf}
 \end{center}
+\end{columns}
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
 \begin{frame}{Заключение}
   \begin{itemize}
-      \item поставлена задача с учётом шума,
-      \item получено, что при любых парамeтрах шума возникает петля,  
-      \item утверждение подтвержденно на эксперименте.
+      \item Поставлена задача с учётом шума в ответах пользователя для рекомендательная системы использующей алгоритм TS
+      \item Получено, что при любых парамeтрах аддитивного шума возникает петля  
+      \item Показано, что утверждение подтверждается на эксперименте.
   \end{itemize}
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
