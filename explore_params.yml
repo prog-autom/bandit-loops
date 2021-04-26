@@ -6,14 +6,15 @@
 # folder: where to place the results
 # run_times: this many times repeat for each parameters tuple
 # random_seed: use this random seed
+# grid_filter: a link to user function that returns True if a given parameter combination should be skipped
 #
 
 grid_analysis: &grid_analysis !ExploreParams
   grid:
-    p: [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    p: [1.0]
     w: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    M: [10]
-    l: [4]
+    M: [1, 10]
+    l: [1, 4]
     b: [0.1]
     # Q is not used but declared
     Q: [0]
@@ -26,8 +27,9 @@ grid_analysis: &grid_analysis !ExploreParams
     bandit_name: 'ts_model'
     experiment: !function src/experiment.BanditLoopExperiment
     init_random_state: !function src/experiment.init_random_state
+    grid_filter: !function src/experiment.skip_params
   folder: "${env.TARGETFOLDER}"
-  run_times: 3
+  run_times: 1
   random_seed: "${env.RANDOMSEED}"
 
 

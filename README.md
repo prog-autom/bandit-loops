@@ -6,13 +6,11 @@
 
 ## Постановка задачи
 
-TODO О задаче и этом репозитории. 
+Целью работы является теоретический анализ условий сходимости TS для различных параметров шума p, w, u и экспериментальное подтверждение полученых соотношений. 
 
-Пример.
-
-We running the experiment as show at the figure below 
-
-<img src=".img/experiment-setup.png" alt="experiment setup" width="700"/>
+Целью эксперимента является наблюдение петель скрытой обратной связи для определённых параметров шума. 
+Проверяется гипотеза о возникновении петель при параметрах шума, найденных из теоретических соотношений. 
+Важной частью эксперимента является сравнения поведений рекомендательной системы с шумом в ответах пользователя и без. 
 
 ## Как запускать
 
@@ -61,26 +59,19 @@ Results will be placed into [./results](./results) folder.
 
 ## Проведение полного эксперимента 
 
-TODO Адаптировать под текущую задачу.
-
-Пример.
-
-There is a script [./run_experiment.sh](./run_experiment.sh) that runs the experiment
-for a grid of parameters, usage from 0.1 to 0.9, adherence from 0.1 to 0.9 
-and step size 10 or 20.
+Скрипт [./run_experiment.sh](./run_experiment.sh) запускает эксперимент для параметров T=2000, M=10, l=4. Перебираюся параметры шума w = [1, ..., 9] с фиксированным p = 0.9.
 
 The script relies on mldev to run trials for a fixed set of parameters.
 
 ## Исходный код
 
-TODO Указать, где найти исходники и какие файлы за что отвечают
 
 Пример.
 
-Source code can be found in [./src](./src) folder. The [main.py](./src/main.py) file contains glue code to run experiments.
-The [experiment.py](./src/experiment.py) contains experiment implementation and utility procedures.
-Visualizations are prepared in [results.py](./src/results.py) by aggregating data from the experiment.
-A very draft math model is provided in [mathmodel.py](./src/mathmodel.py).
+Исходники кода находятся в [./src](./code) .  [main.py](./code/main.py) содержит запуск экспериментов.
+[experiment.py](./code/experiment.py) содержит реализацию шаблона проведения эксперимента.
+Данные сохраняются при помощи [results.py](./code/results.py) для каждого проведённого эксперимента.
+[mathmodel.py](./code/mathmodel.py) cодержит основные компоненты для провдения экспериментов. .
 
 ## Что осталось сделать
 
@@ -95,27 +86,5 @@ TODO Указать, если что-то из задуманного пока �
 
 TODO Указать ссылку на публикацию или arxiv. Если пока нет публикации дать ссылку на этот репозиторий в формате Bibtex
 
-Пример.
-
-If you find template useful, please cite the original paper as following
-
-```bibtex
-@inproceedings{Khritankov2021Hidden,
-    title = "Hidden feedback loops in machine learning systems: a simulation model and preliminary results",
-    author = "Khritankov, Anton",
-    booktitle = "Proceedings of the 13th International Conference, SWQD 2021, Vienna, Austria, January 19–21, 2021",
-    year = "2021",
-    pages={54--65},
-    volume = "404",
-    series = "Software Quality: Future Perspectives on Software Engineering Quality",
-    publisher = "Springer International Publishing"
-}
-```
-
-There is an updated version of the paper at [arXiv:2101.05673](https://arxiv.org/abs/2101.05673)
-
 ## Лицензия
 
-Пример.
-
-The code is licensed under MIT license, see [LICENSE](LICENSE)
