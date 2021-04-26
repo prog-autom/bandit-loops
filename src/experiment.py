@@ -84,6 +84,8 @@ def init_random_state(seed):
     random.seed = int(seed)
     return seed
 
+def skip_params(M, l):
+    return not (M >= l)
 
 class BanditLoopExperiment:
     """

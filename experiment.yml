@@ -85,6 +85,14 @@ run_grid: !GenericPipeline
   runs:
     - !BasicStage
       name: grid_search
+      inputs:
+        - !path
+          path: ./src
+        - !path
+          files:
+            - ./experiment.yml
+            - ./explore_params.yml
+            - requirements.txt
       outputs:
         - !path
           path:  !line |

@@ -2,6 +2,7 @@ import seaborn as sb
 from matplotlib import pyplot as plt
 import pandas as pd
 
+# TODO must also collect errors
 
 class MultipleResults:
     index_keys = ['round', 'trial']
