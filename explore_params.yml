@@ -1,4 +1,4 @@
-#
+
 # This set ups the parameter grid search
 # grid: specified parameters and a list of values
 # results: what attributes of the experiment class include into results file
@@ -12,10 +12,10 @@
 grid_analysis: &grid_analysis !ExploreParams
   grid:
     p: [1.0]
-    w: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    M: [1, 10]
-    l: [1, 4]
-    b: [0.1]
+    w: [0]
+    M: [1,2,3,4,5,6,7,8,9,10]
+    l: [1,2,3,4,5,6,7,8,9,10]
+    b: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
     # Q is not used but declared
     Q: [0]
     T: [2000]
@@ -29,7 +29,7 @@ grid_analysis: &grid_analysis !ExploreParams
     init_random_state: !function src/experiment.init_random_state
     grid_filter: !function src/experiment.skip_params
   folder: "${env.TARGETFOLDER}"
-  run_times: 1
+  run_times: 3
   random_seed: "${env.RANDOMSEED}"
 
 
