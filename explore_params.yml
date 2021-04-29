@@ -29,7 +29,7 @@ grid_analysis: &grid_analysis !ExploreParams
     init_random_state: !function src/experiment.init_random_state
     grid_filter: !function src/experiment.skip_params
   folder: "${env.TARGETFOLDER}"
-  run_times: 3
+  run_times: 4
   random_seed: "${env.RANDOMSEED}"
 
 
