@@ -235,12 +235,12 @@
 \begin{figure}[h]
   \begin{multicols}{2}
     \hfill
-    \includegraphics[width=0.5\textwidth]{norm_interest.pdf}
+    \includegraphics[width=0.5\textwidth]{../figures/norm_interest.pdf}
     \hfill
     \caption{Логарифм нормы интереса на очередном шаге рекомендации.}
     \label{fig1}
     \hfill
-    \includegraphics[width=0.5\textwidth]{rewards.pdf}
+    \includegraphics[width=0.5\textwidth]{../figures/rewards.pdf}
     \hfill
     \caption{Суммы наград на очередном шаге рекомендации.}
     \label{fig2}
@@ -252,45 +252,60 @@
 % \end{center}
 
 На рис.$~\ref{fig3}$ изображён разброс значений нормы интереса для 30 запусков эксперимента.
-На рис.$~\ref{fig4}$ сравниваются рекомендательные системы со случайным алгоритмом и TS.
+На рис.$~\ref{fig8},\ref{fig9}$ сравниваются рекомендательные системы с различными алгоритмами рекомендации: Thompson Sampling, Random, Epsilon Greedy, Optimal.
 
-Для случайной модели тоже наблюдается образование петли (см. рис.$~\ref{fig4}$). 
-Она более хаотична, но тренд неограниченного роста интереса всё равно присутствует.   
+В случае аддитивного шума для всех моделей тоже наблюдается образование петли (см. рис.$~\ref{fig9}$). 
+Только для случайной модели заметены существенные различия, но тренд неограниченного роста интереса всё равно присутствует.   
+
+
+Для накопительного шума для всех моделей, кроме оптимальной, тоже наблюдается образование петли (см. рис.$~\ref{fig8}$). 
 
 \begin{figure}[h]
   \begin{multicols}{2}
     \hfill
-    \includegraphics[width=0.5\textwidth]{var_norm_interest.pdf}
+    \includegraphics[width=0.5\textwidth]{../figures/var_norm_interest.pdf}
     \hfill
     \caption{Разброс логарифма нормы интереса от шага.}
     \label{fig3}
     \hfill
-    \includegraphics[width=0.5\textwidth]{compare_random_and_ts.pdf}
+    \includegraphics[width=0.5\textwidth]{../figures/winstreak_norm_interest.pdf}
+    \caption{Зависимость нормы интереса от шага при различных параметров накопительного шума}
     \hfill
-    \caption{Сравнение случайного алгоритма и TS.}
     \label{fig4}
   \end{multicols}
 \end{figure}
 
-% \begin{center}
-%   \includegraphics[width=16cm]{compare_random_and_ts.pdf}
-% \end{center}
+\newpage
 
-% \begin{figure}[h]
-%   \begin{multicols}{2}
-%     \hfill
-%     \includegraphics[width=8cm]{3d_var_wp_max_interest.pdf}
-%     \hfill
-%     \caption{Разброс значений максимального интереса на шаге $T=2000$ в зависимости от параметров шума $w, p$}
-%     \label{fig5}
-%     \hfill
-%     \includegraphics[width=9cm]{countour_wp.pdf}
-%     \hfill
-%     \caption{Значения максимального интереса на шаге $T=2000$ в зависимости от параметров шума $w, p$}
-%     \label{fig6}
-%   \end{multicols}
-% \end{figure}
+\begin{figure}[h]
+  \begin{multicols}{2}
+    \hfill
+    \includegraphics[width=0.5\textwidth]{../figures/compare_model_b.pdf}
+    \hfill
+    \caption{Сравнение различных алгоритмов рекомендации для накопительной модели шума}
+    \label{fig8}
+    \hfill
+    \includegraphics[width=0.5\textwidth]{../figures/compare_models_w.pdf}
+    \hfill
+    \caption{Сравнение различных алгоритмов рекомендации для аддитивной модели шума}
+    \label{fig9}
+  \end{multicols}
+\end{figure}
 
+\begin{figure}[h]
+  \begin{multicols}{2}
+    \hfill
+    \includegraphics[width=0.5\textwidth]{../figures/countour_Mlb.pdf}
+    \hfill
+    \caption{Распределение максимумов значения интереса на шаге $T=2000$ для различных параметров модели и шума}
+    \label{fig5}
+    \hfill
+    \includegraphics[width=0.5\textwidth]{../figures/countour_big_Mlb.pdf}
+    \hfill
+    \caption{Распределение максимумов значения интереса на шаге $T=2000$ для больших параметров модели}
+    \label{fig6}
+  \end{multicols}
+\end{figure}
 % На рис.$~\ref{fig4},~\ref{fig5}$ отоброженно влияние параметров шума на интерес. 
 % Можно видеть, что увеличение шума замедляет рост интереса. 
 % Это согласуется с полученным утверждением и рис$~\ref{fig1}$.
@@ -298,13 +313,15 @@
 \newpage
 
 \section{Заключение}
-Поставлена задача существования петель скрытой обратной связи при наличии шума в ответах пользователя. 
-Для текущей модели шума было получено, что при любых параметрах возникают петли. 
+Поставлена задача существования петель скрытой обратной связи при наличии аддитвного шума в ответах пользователя и независимого обновления интереса.
+Также был сформулирован накопительный шум, где присутсвует скоррелированность при обновлении интереса пользователя.
+Для аддитвной модели шума было получено, что при любых параметрах возникают петли. 
 Это также подверждается в эксперименте.
+В случае накопительного шума на эксперименте было получено наличие порога, при котором петля отстутствует.
 
 В дальнейшем требуется проверить гипотезу о возникновении петель при любом несмещённом аддитивном шума. 
+Требуется получить теоретические обоснования отсутствия петли при накопительном шуме.
 Также стоит расмотреть другие модели шума. 
-Так как после определённого значения интереса из-за сигмоиды любое влияние шума сводилось на нет. 
 %%%% если имеется doi цитируемого источника, необходимо его указать, см. пример в \bibitem{article}
 %%%% DOI публикации, зарегистрированной в системе Crossref, можно получить по адресу http://www.crossref.org/guestquery/
 \begin{thebibliography}{99}
