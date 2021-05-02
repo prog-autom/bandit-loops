@@ -104,10 +104,18 @@ run_grid: !GenericPipeline
       script:
         - mldev run -f ./explore_params.yml grid_pipeline
 
-run_wb_grid: !GenericPipeline
+run_grid: !GenericPipeline
   runs:
     - !BasicStage
       name: grid_search
+      inputs:
+        - !path
+          path: ./src
+        - !path
+          files:
+            - ./experiment.yml
+            - ./explore_params.yml
+            - requirements.txt
       outputs:
         - !path
           path:  !line |
@@ -117,5 +125,51 @@ run_wb_grid: !GenericPipeline
         TARGETFOLDER: "${self.outputs[0].path}"
         RANDOMSEED: "${root.random_seed}"
       script:
-        - mldev run -f ./explore_wb.yml grid_pipeline
+        - mldev run -f ./explore_params.yml grid_pipeline
 
+run_big_Ml_grid: !GenericPipeline
+  runs:
+    - !BasicStage
+      name: big_params_grid
+      inputs:
+        - !path
+          path: ./src
+        - !path
+          files:
+            - ./experiment.yml
+            - ./explore_params.yml
+            - requirements.txt
+      outputs:
+        - !path
+          path:  !line |
+            ./results/${self.name}/${root.random_seed}
+      env:
+        PYTHONPATH: '${env.PYTHONPATH}:./src:./.mldev'
+        TARGETFOLDER: "${self.outputs[0].path}"
+        RANDOMSEED: "${root.random_seed}"
+      script:
+        - mldev run -f ./explore_params.yml big_grid_pipeline
+
+
+run_optimal_grid: !GenericPipeline
+  runs:
+    - !BasicStage
+      name: optimal_grid
+      inputs:
+        - !path
+          path: ./src
+        - !path
+          files:
+            - ./experiment.yml
+            - ./explore_params.yml
+            - requirements.txt
+      outputs:
+        - !path
+          path:  !line |
+            ./results/${self.name}/${root.random_seed}
+      env:
+        PYTHONPATH: '${env.PYTHONPATH}:./src:./.mldev'
+        TARGETFOLDER: "${self.outputs[0].path}"
+        RANDOMSEED: "${root.random_seed}"
+      script:
+        - mldev run -f ./explore_params.yml optimal_grid_pipeline

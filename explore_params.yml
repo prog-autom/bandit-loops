@@ -32,6 +32,60 @@ grid_analysis: &grid_analysis !ExploreParams
   run_times: 4
   random_seed: "${env.RANDOMSEED}"
 
+big_grid_analysis: &big_grid_analysis !ExploreParams
+  grid:
+    p: [1.0]
+    w: [0]
+    M: [4,10,50,75,100]
+    l: [1,4,10,50,75,100]
+    b: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    # Q is not used but declared
+    Q: [0]
+    T: [2000]
+  results:
+    interest: "User interests"
+    loop_amp: '\abs(\mu^t - \mu^0)'
+  pipeline:
+    bandit_model: !function src/experiment.get_ts_model
+    bandit_name: 'ts_model'
+    experiment: !function src/experiment.BanditLoopExperiment
+    init_random_state: !function src/experiment.init_random_state
+    grid_filter: !function src/experiment.skip_params
+  folder: "${env.TARGETFOLDER}"
+  run_times: 4
+  random_seed: "${env.RANDOMSEED}"
+
+optimal_grid_analysis: &optimal_grid_analysis !ExploreParams
+  grid:
+    p: [1.0]
+    w: [0., 1., 4., 10.]
+    M: [10]
+    l: [4]
+    b: [0.0, 0.3, 0.5, 0.8, 1.0]
+    # Q is not used but declared
+    Q: [0]
+    T: [5000]
+  results:
+    interest: "User interests"
+    loop_amp: '\abs(\mu^t - \mu^0)'
+  pipeline:
+    bandit_model: !function src/experiment.get_optimal_model
+    bandit_name: 'optimal_model'
+    experiment: !function src/experiment.BanditLoopExperiment
+    init_random_state: !function src/experiment.init_random_state
+    grid_filter: !function src/experiment.skip_params
+  folder: "${env.TARGETFOLDER}"
+  run_times: 1
+  random_seed: "${env.RANDOMSEED}"
+
+
+big_grid_pipeline: !GenericPipeline
+  runs:
+    - *big_grid_analysis
+
+optimal_grid_pipeline: !GenericPipeline
+  runs:
+    - *optimal_grid_analysis
 
 grid_pipeline: !GenericPipeline
   runs:

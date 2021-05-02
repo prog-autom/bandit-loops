@@ -70,6 +70,64 @@ class RandomModel:
     def update(self, actions, response):
         return []
 
+class OptimalModel:
+    """
+    """
+    def __init__(self, M, l):
+        """
+        :param M: number of actions
+        :param l: return this number of recommendations
+        """
+        self.l = l
+        self.M = M
+
+    def set_init_interest(self, interest):
+        self.interest = interest
+
+    def update_interest(self, update):
+        self.interest = self.interest + update
+
+    def predict(self):
+        """
+        Get the next prediction
+        :return: an np array with action probabilities, an np array of selected actions
+        """
+        return [], np.argsort(-self.interest)[:self.l]
+
+    def update(self, actions, response):
+        return []
+
+class EpsilonGreedyModel:
+    """
+    """
+    def __init__(self, M, l, epsilon=0.1):
+        """
+        :param M: number of actions
+        :param l: return this number of recommendations
+        """
+        self.l = l
+        self.M = M
+        self.epsilon = epsilon
+
+    def set_init_interest(self, interest):
+        self.interest = interest
+
+    def update_interest(self, update):
+        self.intereset = self.interest + update
+
+    def predict(self):
+        """
+        Get the next prediction
+        :return: an np array with action probabilities, an np array of selected actions
+        """
+        cur_max = np.argsort(-self.interest)[:self.l]
+        random_choice = np.random.permutation(self.M)[:self.l] 
+        greedy = sps.bernoulli(self.epsilon).rvs(self.l)
+        return [], greedy*random_choice + (1-greedy)*cur_max
+
+    def update(self, actions, response):
+        return []
+
 
 def get_ts_model(M, l):
     assert l <= M
@@ -78,6 +136,14 @@ def get_ts_model(M, l):
 def get_random_model(M, l):
     assert l <= M
     return RandomModel(M=int(M), l=int(l))
+
+def get_optimal_model(M, l):
+    assert l <= M
+    return OptimalModel(M=int(M), l=int(l))
+
+def get_epsilon_greedy_model(M, l, epsilon=0.1):
+    assert l <= M
+    return EpsilonGreedyModel(M=int(M), l=int(l), epsilon=epsilon)
 
 def init_random_state(seed):
     np.random.seed(int(seed))
@@ -127,6 +193,7 @@ class BanditLoopExperiment:
 
         self.bandit = self.bandit_model()
         self.init_interest = Model.interest_init(self.bandit.M)
+        
         self.win_streak = np.zeros(self.bandit.M)
         self.lose_streak = np.zeros(self.bandit.M)
         self.interest = []
@@ -170,6 +237,9 @@ class BanditLoopExperiment:
 
         cur_interest = self.init_interest
         
+        if isinstance(self.bandit, EpsilonGreedyModel) or isinstance(self.bandit, OptimalModel):
+            self.bandit.set_init_interest(cur_interest)
+
         for t in range(T):
             cur_probabilities, cur_actions = self.bandit.predict()
             
@@ -185,7 +255,10 @@ class BanditLoopExperiment:
                     win_streak=self.win_streak*(cur_interest > 0),
                     lose_streak=self.lose_streak*(cur_interest < 0),
                     b=self.b)    
-    
+
+            if isinstance(self.bandit, EpsilonGreedyModel) or isinstance(self.bandit, OptimalModel):
+                self.bandit.update_interest(interest_update)
+            
             cur_interest = cur_interest + interest_update
 
             # TODO: create function for update
