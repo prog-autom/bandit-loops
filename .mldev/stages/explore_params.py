@@ -54,11 +54,14 @@ class ExploreParams(object):
         experiment = pipeline['experiment']
         init_random_state = pipeline['init_random_state']
         grid_filter = pipeline.get('grid_filter', bool)
+        init_interest = pipeline.get('init_interest')
+
         states['bandit_model'] = [[partial(ExploreParams.fetch_model, model_gen=bandit_model)]]
         states['bandit_name'] = [[bandit_name]]
         states['experiment'] = [[partial(ExploreParams.fetch_invoke, f=experiment)]]
         states['init_random_state'] = [[partial(ExploreParams.fetch_invoke, f=init_random_state)]]
         states['grid_filter'] = [[partial(ExploreParams.fetch_invoke, grid_filter)]]
+        states['init_interest'] = [[partial(ExploreParams.fetch_invoke, f=init_interest)]]
 
         return ParameterGrid(states)
 
@@ -128,7 +131,10 @@ class ExploreParams(object):
         state['init_random_state'](state={'seed':random_seed})
 
         model = state['bandit_model']
+        init_interest = state['init_interest']
         state['bandit_model'] = lambda: model(state=state)
+        state['init_interest'] = lambda: init_interest(state=state)
+
         mye = state['experiment'](state=state)
 
         ExploreParams.invoke_if_defined(mye, 'prepare', state)
