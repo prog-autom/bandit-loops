@@ -9,7 +9,22 @@
 # grid_filter: a link to user function that returns True if a given parameter combination should be skipped
 #
 
+common_pipeline: &common_pipeline
+  init_interest: !function src/mathmodel.BanditNoiseLoopModel.interest_init
+  experiment: !function src/experiment.BanditLoopExperiment
+  init_random_state: !function src/experiment.init_random_state
+  grid_filter: !function src/experiment.skip_params
+
+grid_base: &grid_base
+  results:
+    interest: "User interests"
+    loop_amp: '\abs(\mu^t - \mu^0)'
+  run_times: 4
+  random_seed: "${env.RANDOMSEED}"
+
+
 grid_analysis: &grid_analysis !ExploreParams
+  <<: *grid_base
   grid:
     p: [1.0]
     w: [0]
@@ -19,20 +34,15 @@ grid_analysis: &grid_analysis !ExploreParams
     # Q is not used but declared
     Q: [0]
     T: [2000]
-  results:
-    interest: "User interests"
-    loop_amp: '\abs(\mu^t - \mu^0)'
   pipeline:
+    <<: *common_pipeline
     bandit_model: !function src/experiment.get_ts_model
     bandit_name: 'ts_model'
-    experiment: !function src/experiment.BanditLoopExperiment
-    init_random_state: !function src/experiment.init_random_state
-    grid_filter: !function src/experiment.skip_params
-  folder: "${env.TARGETFOLDER}"
-  run_times: 4
-  random_seed: "${env.RANDOMSEED}"
+  folder: "${env.TARGETFOLDER}/grid"
+
 
 big_grid_analysis: &big_grid_analysis !ExploreParams
+  <<: *grid_base
   grid:
     p: [1.0]
     w: [0]
@@ -42,20 +52,15 @@ big_grid_analysis: &big_grid_analysis !ExploreParams
     # Q is not used but declared
     Q: [0]
     T: [2000]
-  results:
-    interest: "User interests"
-    loop_amp: '\abs(\mu^t - \mu^0)'
   pipeline:
+    <<: *common_pipeline
     bandit_model: !function src/experiment.get_ts_model
     bandit_name: 'ts_model'
-    experiment: !function src/experiment.BanditLoopExperiment
-    init_random_state: !function src/experiment.init_random_state
-    grid_filter: !function src/experiment.skip_params
-  folder: "${env.TARGETFOLDER}"
-  run_times: 4
-  random_seed: "${env.RANDOMSEED}"
+  folder: "${env.TARGETFOLDER}/big"
+  run_times: 1
 
 optimal_grid_analysis: &optimal_grid_analysis !ExploreParams
+  <<: *grid_base
   grid:
     p: [1.0]
     w: [0., 1., 4., 10.]
@@ -65,18 +70,12 @@ optimal_grid_analysis: &optimal_grid_analysis !ExploreParams
     # Q is not used but declared
     Q: [0]
     T: [5000]
-  results:
-    interest: "User interests"
-    loop_amp: '\abs(\mu^t - \mu^0)'
+    epsilon: [0.1]
   pipeline:
+    <<: *common_pipeline
     bandit_model: !function src/experiment.get_optimal_model
     bandit_name: 'optimal_model'
-    experiment: !function src/experiment.BanditLoopExperiment
-    init_random_state: !function src/experiment.init_random_state
-    grid_filter: !function src/experiment.skip_params
-  folder: "${env.TARGETFOLDER}"
-  run_times: 1
-  random_seed: "${env.RANDOMSEED}"
+  folder: "${env.TARGETFOLDER}/optimal"
 
 
 big_grid_pipeline: !GenericPipeline
