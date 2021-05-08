@@ -11,6 +11,7 @@
 \usepackage{subfig}
 \usepackage[all]{xy} % xy package for diagrams
 \usepackage{array}
+\usepackage{tikz}
 \usepackage{multicol}% many columns in slide
 \usepackage{hyperref}% urls
 \usepackage{hhline}%tables
@@ -37,7 +38,7 @@
 \begin{frame}{Цель исследования}
 \begin{block}{Цель}
   Исследование условий существования петель обратной
-связи в рекоммендательной системе с алгоритмом Thomson Sampling в условиях зашумлённости выбора пользователя.
+связи в рекоммендательной системе с алгоритмом Thompson Sampling в условиях зашумлённости выбора пользователя.
 \end{block}
 \begin{block}{Задача}
   Нахождение математического описания условий возникновения петель и экспериментальная их проверка. 
@@ -48,25 +49,50 @@
 \end{block}
 \end{frame}
 %-----------------------------------------------------------------------------------------------------
-\begin{frame}{Петли при параметрах шума $w, Q$}
-
-Распределение отклика $c_t^i$ для рекомендации $\mathbf{a_t}$:
-\begin{gather*}
-    c_t^i \sim \text{Bern} \left(\sigma\left(\mu_t^i (a_t^i) + \mathbin{\color{red} q_t^i } \right) \right), \\ 
-    \mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t), 
-\end{gather*}
-где $q_t^i \sim \text{U}[-w, w], \delta_t \sim U[0, 0.01].$
+\begin{frame}{Петли в рекомендательных системах}
 
 \begin{columns}[c]
-\column{0.3\textwidth}
+\column{0.5\textwidth}
+Отклик $c_t^i$ для рекомендации $\mathbf{a_t}$:
+\begin{gather*}
+    c_t^i \sim \text{Bern} \left(\sigma\left(\mu_t^i (a_t^i) + \mathbin{\color{red} q_t^i } \right) \right). 
+\end{gather*}
+Интерес $\mu_t^i$:
+\begin{gather*}
+    \mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t),\\ 
+\end{gather*}
+
 Определение петель: 
 \begin{gather*}
   \color{red} \lim_{t \to \infty} \|\mu_t - \mu_0 \|_2 = \infty.
 \end{gather*}
-\column{0.7\textwidth}
-\begin{center}
-  \includegraphics[width=7cm]{../norm_interest.pdf}
-\end{center}
+\column{0.6\textwidth}
+\begin{tikzpicture}[
+  node distance={13mm}, thick, 
+  roundnode/.style={circle, draw=blue!60, fill=blue!5, very thick, minimum size=4mm},
+  squarednode/.style={rectangle, draw=red!60, fill=red!5, very thick, minimum size=4mm},
+] 
+\node[roundnode] (1) {$a^1$}; 
+\node[roundnode] (2) [right of=1] {$a^2$};
+\node[roundnode] (3) [right of=2] {$a^3$};
+\node[squarednode] (5) [below of=1]{$\mu^1$}; 
+\node[squarednode] (6) [below of=2] {$\mu^2$};
+\node[squarednode] (7) [below of=3] {$\mu^3$};
+\node[draw] (4) [below of=6] {$User$};
+
+\draw[-] (4) -- (5);
+\draw[-] (4) -- (6);
+\draw[-] (4) -- (7);
+
+\draw[blue,->] (5) to [out=150, in=-150, looseness=1.] node[left]{$c^1 = 1$} (1);
+\draw[blue,->] (6) to [out=150, in=-150, looseness=1.]  (2);
+\draw[blue,dotted] (7)  to [out=150, in=-150, looseness=1.] node[right]{$c^3 = 0$} (3);
+
+\draw[red,->] (1) to [out=-30, in=30, looseness=1.] node[left]{$+\delta^1$}(5);
+\draw[red,->] (2) to  [out=-30, in=30, looseness=1.] (6);
+\draw[red,->] (3) to  [out=-30, in=30, looseness=1.]node[right]{$-\delta^3$}(7);
+\end{tikzpicture} 
+\includegraphics[width=7cm]{../../figures/norm_interest.pdf}
 \end{columns}
 \end{frame}
 
@@ -90,37 +116,37 @@
     \textcolor{blue}{A Tutorial on Thompson Sampling}//
     \BibJournal{CoRR}, 2017, Vol. abs/1707.02038,
 	  URL: \BibUrl{https://arxiv.org/abs/1707.02038}.
-
-  \item
-    \textcolor{black}{Shipra Agrawal, Navin Goyal.}
-    \textcolor{blue}{Analysis of Thompson Sampling for the multi-armed}//
-    \BibJournal{CoRR}, 2011, Vol. abs/1111.1797,
-	  URL: \BibUrl{https://arxiv.org/abs/1111.1797}.
   \end{enumerate}
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
 \begin{frame}{Модель данных}
-  \begin{block}{Параметры}
   Множество объектов $M$, рекомендации $(a^1, \dots, a^l) \in M$, кол-во выдач $T$.
   Задаётся ф-ия описывающая интерес пользователя  в начальный момент времени $\mu_0 : M \to \mathbb{R}$.
+
 \bigskip
-\end{block}
 
 \begin{columns}[T]
 \column{0.5\textwidth}
-\textcolor{blue}{Распределениее откликов:}   
+\textcolor{blue}{Аддитивный шум:}   
 \begin{gather*}
     c_t^i \sim \text{Bern} \left(\sigma\left(\mu_t^i (a_t^i) + \mathbin{\color{red} q_t^i } \right) \right), \\ 
-    q_t^i \sim U[-w, w].
-  \end{gather*}
-\column{0.5\textwidth}
-\textcolor{blue}{Эволюция интереса:}   
-  \begin{gather*}
+    q_t^i \sim U[-w, w], \\
 \mu_{t+1} - \mu_{t} = \delta_t c_t - \delta_t (1 - c_t), \\
 \delta_t \sim U[0, 0.01].
   \end{gather*}
-\end{columns}
 
+\column{0.5\textwidth}
+\textcolor{blue}{Накопительный шум:}   
+\begin{gather*}
+  c_t^i \sim Bern \left(\sigma(\mu_t(a_t^i)) \right), \\
+  \begin{align*}
+    \mu_{t+1} - \mu_{t} =~&\delta_t c_t (\mathbin{ \color{red} 1 + b \cdot l_t})~- \\ 
+                        &\delta_t (1 - c_t) (\mathbin{ \color{red} 1 + b \cdot s_t}),
+\end{align*} \\
+  s_t \sim \text{Geom}(1 - \sigma(\mu_t(a_t)), \\
+  l_t \sim \text{Geom}(\sigma(\mu_t(a_t)). 
+\end{gather*}
+\end{columns}
 \bigskip
 \textcolor{blue}{Определение петли}:
 \begin{gather*}
@@ -134,10 +160,10 @@
 Апостериорное распределение для элемента $a^i \in M$ описывается $Beta(\alpha_t^i, \beta_t^i)$. 
 Параметры обновляются по закону:
 \[\alpha_{t+1} = \alpha_t + c_t, \beta_{t+1} = \beta_t + 1 - c_t.\]
-Задача оптимизации бандита:
+Задача оптимизации алгоритма:
 \begin{gather*}  
-\max_{c_t^i} \sum_{t = 1}^T \sum_{i = 1}^l c_t^i = T \cdot l.\\ 
-   T \cdot l - \sum_{t = 1}^T \sum_{i = 1}^l c_t^i \to \min_{b}, 
+\max_{c_t^i} \sum_{t = 1}^T \sum_{i = 1}^l c_t^i = T \cdot l,\\ 
+   T \cdot l - \sum_{t = 1}^T \sum_{i = 1}^l c_t^i \to \min_{b}. 
 \end{gather*}
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
@@ -145,8 +171,12 @@
 Назовём \textit{режимом работы TS с фиксированными лидерами} поведение алгоритма, в котором TS не меняются элементы рекомендаций.
   \begin{block}{Утверждение}
   Пусть  TS работает в режиме c фиксированными лидереми начиная с какого-то момента времени $\tau$ и используется аддитивная модель шума. 
+  Для любых $w$:
+\begin{gather*}
+  \color{red} \lim_{t \to \infty} \|\mu_t - \mu_0 \|_2 = \infty.
+\end{gather*}
   \end{block}
-  \begin{block}{Анализ}
+  \begin{block}{Анализ результов}
   \begin{itemize}
       \item Любой несмещённый аддитивный шум не влияет на возникновение петли. 
       \item При достаточно большом значение $\mu_t$ из-за $\sigma (x)$ шум $w$ перестаёт сколько-то значимо изменять истинный интерес. 
@@ -161,72 +191,55 @@
 
 \begin{block}{Алгоритм}
 \begin{algorithmic}
-  \REQUIRE{M, l, T, w, p}
-  \STATE BanditLoopExperiment.prepare()
+  \REQUIRE{M, l, T, w, b}
+  \STATE Инициализировать начальные значения()
   \FOR{$t$ от $1$ до $T$} 
-    \STATE $r_t \leftarrow$ TSBandit.predict()
-    \STATE $c_t \leftarrow$ make\_response\_noise($r_t$, w, p)
-    \STATE TSBandit.update($c_t$)
-    \STATE Model.interest\_update($c_t$)
-    \STATE save\_iter($t, c_t, \mu_t$)
+  \STATE $r_t \leftarrow$ Предсказать рекомендацию()
+    \STATE $c_t \leftarrow$ Сгенерировать отклик($r_t$, w, b)
+    \STATE Обновить параметры алгоритма($c_t$)
+    \STATE Обновить интерес($c_t$)
+    \STATE Cохранить текущие значения($t, c_t, \mu_t$)
   \ENDFOR
 \end{algorithmic}
 \end{block}
 
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
-\begin{frame}{Вычислительный эксперимент}
-\begin{columns}[c]
+\begin{frame}{Аддитивный шум} 
+\begin{columns}[T]
 \column{0.5\textwidth}
-Зависимость нормы интeреса от итерации.
-\begin{center}
-  \includegraphics[width=6cm]{../norm_interest.pdf}
-\end{center}
+Норма интeреса от итерации.
+\includegraphics[width=6cm]{../../figures/norm_interest.pdf}
 \column{0.5\textwidth}
-Зависимость суммы откликов от итерации.  
-\begin{center}
-  \includegraphics[width=6cm]{../rewards.pdf}
-\end{center}
+Сумма откликов от итерации.  
+\includegraphics[width=6cm]{../../figures/rewards.pdf}
 \end{columns}
 
 \end{frame}
 %------------------------------------------------------------------------------------
-% \begin{frame}{Анализ ошибки}
-% Распределение интереса от параметров шума $w, p$ после $2000$ итераций.
-% \begin{columns}[c]
-% \column{0.5\textwidth}
-% \begin{center}
-%   \includegraphics[width=6cm]{../3d_var_wp_max_interest.pdf}
-% \end{center}
-% \column{0.5\textwidth}
-% \begin{center}
-%   \includegraphics[width=6cm]{../countour_wp.pdf}
-% \end{center}
-% \end{columns}
-% \end{frame}
-%------------------------------------------------------------------------------------
-\begin{frame}{Анализ ошибки}
+\begin{frame}{Накопительный шум}
 \begin{columns}[T]
 \column{0.5\textwidth}
 
 Разброс нормы интереса
 \begin{center}
-  \includegraphics[width=6cm]{../var_norm_interest.pdf}
+  \includegraphics[width=6cm]{../../figures/winstreak_norm_interest.pdf}
 \end{center}
 \column{0.5\textwidth}
-
-Сравнивается MAB TS и рандомный алгоритм.
+Распределение максимума интереса после $2000$ шагов.
 \begin{center}
-  \includegraphics[width=6cm]{../compare_random_and_ts.pdf}
+  \includegraphics[width=6cm]{../../figures/countour_Mlb_part.pdf}
 \end{center}
 \end{columns}
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
 \begin{frame}{Заключение}
   \begin{itemize}
-      \item Поставлена задача с учётом шума в ответах пользователя для рекомендательная системы использующей алгоритм TS
+      \item Поставлена задача с учётом аддитивного шума в ответах пользователя для рекомендательная системы использующей алгоритм TS
+      \item Поставлена задача с учётом корреляции между обновлением интереса. 
       \item Получено, что при любых парамeтрах аддитивного шума возникает петля  
       \item Показано, что утверждение подтверждается на эксперименте.
+      \item Показано, что при накопительном шуме петли не возникают.
   \end{itemize}
 \end{frame}
 %----------------------------------------------------------------------------------------------------------

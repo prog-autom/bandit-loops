@@ -70,6 +70,54 @@ class RandomModel:
     def update(self, actions, response):
         return []
 
+class OptimalModel:
+    """
+    """
+    def __init__(self, M, l):
+        """
+        :param M: number of actions
+        :param l: return this number of recommendations
+        """
+        self.l = l
+        self.M = M
+        self.interest = None
+
+    def predict(self):
+        """
+        Get the next prediction
+        :return: an np array with action probabilities, an np array of selected actions
+        """
+        return [], np.argsort(-self.interest)[:self.l]
+
+    def update(self, actions, response):
+        return []
+
+class EpsilonGreedyModel:
+    """
+    """
+    def __init__(self, M, l, epsilon):
+        """
+        :param M: number of actions
+        :param l: return this number of recommendations
+        """
+        self.l = l
+        self.M = M
+        self.epsilon = epsilon
+        self.interest = None
+
+    def predict(self):
+        """
+        Get the next prediction
+        :return: an np array with action probabilities, an np array of selected actions
+        """
+        cur_max = np.argsort(-self.interest)[:self.l]
+        random_choice = np.random.permutation(self.M)[:self.l] 
+        greedy = sps.bernoulli(self.epsilon).rvs(self.l)
+        return [], greedy*random_choice + (1-greedy)*cur_max
+
+    def update(self, actions, response):
+        return []
+
 
 def get_ts_model(M, l):
     assert l <= M
@@ -78,6 +126,15 @@ def get_ts_model(M, l):
 def get_random_model(M, l):
     assert l <= M
     return RandomModel(M=int(M), l=int(l))
+
+def get_optimal_model(M, l):
+    assert l <= M
+    return OptimalModel(M=int(M), l=int(l))
+
+def get_epsilon_greedy_model(M, l, epsilon):
+    assert l <= M
+    assert 0 < epsilon < 1.0
+    return EpsilonGreedyModel(M=int(M), l=int(l), epsilon=float(epsilon))
 
 def init_random_state(seed):
     np.random.seed(int(seed))
@@ -112,7 +169,7 @@ class BanditLoopExperiment:
         self.bandit_name = bandit_name
         self.bandit_model = bandit_model
 
-    def prepare(self, w, Q, p, b, use_log=False):
+    def prepare(self, w, Q, p, b, init_interest, use_log=False):
         """
         Initializes the experiment
 
@@ -126,7 +183,10 @@ class BanditLoopExperiment:
         self.use_log = bool(use_log)
 
         self.bandit = self.bandit_model()
-        self.init_interest = Model.interest_init(self.bandit.M)
+        self.init_interest = init_interest()
+        if hasattr(self.bandit, 'interest'):
+            self.bandit.interest = self.init_interest
+
         self.win_streak = np.zeros(self.bandit.M)
         self.lose_streak = np.zeros(self.bandit.M)
         self.interest = []
@@ -169,7 +229,7 @@ class BanditLoopExperiment:
             self.interest.append(interest)
 
         cur_interest = self.init_interest
-        
+
         for t in range(T):
             cur_probabilities, cur_actions = self.bandit.predict()
             
@@ -185,8 +245,11 @@ class BanditLoopExperiment:
                     win_streak=self.win_streak*(cur_interest > 0),
                     lose_streak=self.lose_streak*(cur_interest < 0),
                     b=self.b)    
-    
+
+
             cur_interest = cur_interest + interest_update
+            if hasattr(self.bandit, 'interest'):
+                self.bandit.interest = cur_interest
 
             # TODO: create function for update
             self.win_streak[cur_actions] = self.win_streak[cur_actions]*cur_response + cur_response

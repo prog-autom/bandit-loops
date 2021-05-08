@@ -24,7 +24,16 @@ def create_model(model_params):
         model = lambda : get_random_model(**model_params['random_model'])
         print(f"Using model: {model_name}")
         yield model, model_name
-
+    elif 'optimal_model' in model_params:
+        model_name = 'optimal'
+        model = lambda : get_optimal_model(**model_params['random_model'])
+        print(f"Using model: {model_name}")
+        yield model, model_name
+    elif 'epsilon_greedy_model' in model_params:
+        model_name = 'epsilon_greedy_model'
+        model = lambda : get_epsilonn_greedy_model(**model_params['random_model'])
+        print(f"Using model: {model_name}")
+        yield model, model_name
 
 def bandit_loop(model_params, params):
     print(f"Running bandit-loop experiment")
