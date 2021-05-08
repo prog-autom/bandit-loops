@@ -1,16 +1,18 @@
 import seaborn as sb
 from matplotlib import pyplot as plt
 import pandas as pd
+import json
 
 # TODO must also collect errors
 
 class MultipleResults:
     index_keys = ['round', 'trial']
 
-    def __init__(self, model_name, params={}, **initial_state):
-        self.model_name = model_name
+    def __init__(self, experiment_name, config={}, params={}, **initial_state):
+        self.experiment_name = experiment_name
         self.params = params
         self.param_names = set(params.keys())
+        self.config = config
         self.state_vars = initial_state
         for k, v in initial_state.items():
             vars(self)[k] = list()
@@ -40,6 +42,10 @@ class MultipleResults:
     def histplot(data, x, y, **kwargs):
         return sb.histplot(data=data, x=y, stat="probability", legend=True, **kwargs)
 
+    def save_config(self, path):
+        with open(f"{path}/{self.experiment_name}-config.json", "w") as f:
+            json.dump(self.config, f, sort_keys=True)
+
     def save_state(self, path):
         data_keys = self.get_state.keys()
         index_keys = set(MultipleResults.index_keys + list(self.param_names))
@@ -48,9 +54,9 @@ class MultipleResults:
             data_k = pd.DataFrame(data=vars(self)[k])
             data = data.merge(data_k, how="outer", on=list(index_keys))
 
-        data.to_csv(f"{path}/{self.model_name}-state.csv", index_label='row')
-        data.to_json(f"{path}/{self.model_name}-state.json", orient="records", lines=True)
-        data.to_parquet(f"{path}/{self.model_name}-state.parquet", index=True)
+        data.to_csv(f"{path}/{self.experiment_name}-state.csv", index_label='row')
+        data.to_json(f"{path}/{self.experiment_name}-state.json", orient="records", lines=True)
+        data.to_parquet(f"{path}/{self.experiment_name}-state.parquet", index=True)
 
     def plot_multiple_results(self, path, plot_fun=sb.lineplot, **figures):
         for fig in figures.keys():
@@ -74,5 +80,5 @@ class MultipleResults:
                 data = data.merge(data_k, how="outer", on=list(index_keys))
             plt.title(fig)
             plt.legend()
-            plt.savefig(f"{path}/{self.model_name}-{fig}.png", dpi=300)
-            data.to_csv(f"{path}/{self.model_name}-{fig}.csv", index_label='row')
+            plt.savefig(f"{path}/{self.experiment_name}-{fig}.png", dpi=300)
+            data.to_csv(f"{path}/{self.experiment_name}-{fig}.csv", index_label='row')

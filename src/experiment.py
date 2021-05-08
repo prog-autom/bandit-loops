@@ -49,6 +49,7 @@ class TSBandit:
         self.params[actions] += np.vstack([response, 1 - response]).T
         return self.params.copy()
 
+
 class RandomModel:
     """
     """
@@ -69,6 +70,7 @@ class RandomModel:
 
     def update(self, actions, response):
         return []
+
 
 class OptimalModel:
     """
@@ -119,27 +121,32 @@ class EpsilonGreedyModel:
         return []
 
 
-def get_ts_model(M, l):
+def ts_model(M, l):
     assert l <= M
     return TSBandit(M=int(M), l=int(l))
 
-def get_random_model(M, l):
+
+def random_model(M, l):
     assert l <= M
     return RandomModel(M=int(M), l=int(l))
 
-def get_optimal_model(M, l):
+
+def optimal_model(M, l):
     assert l <= M
     return OptimalModel(M=int(M), l=int(l))
 
-def get_epsilon_greedy_model(M, l, epsilon):
+
+def epsilon_greedy_model(M, l, epsilon):
     assert l <= M
     assert 0 < epsilon < 1.0
     return EpsilonGreedyModel(M=int(M), l=int(l), epsilon=float(epsilon))
+
 
 def init_random_state(seed):
     np.random.seed(int(seed))
     random.seed = int(seed)
     return seed
+
 
 def skip_params(M, l):
     return not (M >= l)
@@ -165,11 +172,11 @@ class BanditLoopExperiment:
         'Actions': {'data':['recommendations'],'plot_fun': MultipleResults.scatterplot}
     }
 
-    def __init__(self, bandit_model, bandit_name):
-        self.bandit_name = bandit_name
+    def __init__(self, bandit_model, experiment_name):
+        self.experiment_name = experiment_name
         self.bandit_model = bandit_model
 
-    def prepare(self, w, Q, p, b, init_interest, use_log=False):
+    def prepare(self, w, init_interest, use_log=False):
         """
         Initializes the experiment
 
@@ -177,8 +184,6 @@ class BanditLoopExperiment:
         :return: None
         """
         self.w = float(w)
-        self.p = float(p)
-        self.b = float(b)
 
         self.use_log = bool(use_log)
 
@@ -187,8 +192,6 @@ class BanditLoopExperiment:
         if hasattr(self.bandit, 'interest'):
             self.bandit.interest = self.init_interest
 
-        self.win_streak = np.zeros(self.bandit.M)
-        self.lose_streak = np.zeros(self.bandit.M)
         self.interest = []
         self.probabilities = []
         self.recommendations = []
@@ -205,6 +208,9 @@ class BanditLoopExperiment:
         cur_loop_amp = np.linalg.norm(cur_interest - init_interest)**2
         self.loop_amp += [cur_loop_amp]
 
+    def update_state(self, interest, actions, response):
+        pass
+
     ResultsTuple = namedtuple('ResultsNumpy',
                               ['interest', 'TS_params',
                                'probabilities', 'recommendations',
@@ -217,6 +223,14 @@ class BanditLoopExperiment:
             probabilities=np.array(self.probabilities),
             recommendations=np.array(self.recommendations),
             response=np.array(self.response)
+        )
+
+    def get_updated_interest(self, actions, responses, interest):
+        return Model.get_updated_interest(
+            l=self.bandit.l, M=self.bandit.M,
+            interest=interest,
+            actions=actions,
+            response=responses
         )
 
     def run_experiment(self, T):
@@ -235,27 +249,19 @@ class BanditLoopExperiment:
             
             cur_response = Model.make_response_noise(
                 cur_interest[cur_actions],
-                w=self.w,
-                p=self.p
+                w=self.w
             )
             
             cur_bandit_params = self.bandit.update(cur_actions, cur_response)
-            interest_update  = Model.get_interest_update(
-                    l=self.bandit.l, M=self.bandit.M, actions=cur_actions, response=cur_response, 
-                    win_streak=self.win_streak*(cur_interest > 0),
-                    lose_streak=self.lose_streak*(cur_interest < 0),
-                    b=self.b)    
 
+            cur_interest = self.get_updated_interest(
+                actions=cur_actions,
+                responses=cur_response,
+                interest=cur_interest
+            )
 
-            cur_interest = cur_interest + interest_update
             if hasattr(self.bandit, 'interest'):
                 self.bandit.interest = cur_interest
-
-            # TODO: create function for update
-            self.win_streak[cur_actions] = self.win_streak[cur_actions]*cur_response + cur_response
-
-            self.lose_streak[cur_actions] = self.lose_streak[cur_actions]*(1-cur_response) + \
-                    (1-cur_response)
 
             save_iter(t,
                       pr=cur_probabilities,
@@ -266,3 +272,45 @@ class BanditLoopExperiment:
 
             self.eval_metrics(cur_interest=cur_interest,
                               init_interest=self.init_interest)
+
+
+class WinStreakExperiment(BanditLoopExperiment):
+
+    def prepare(self, w, init_interest, b=0.0, use_log=False):
+        super().prepare(w, init_interest, use_log=use_log)
+
+        self.b = float(b)
+        self.win_streak = np.zeros(self.bandit.M)
+        self.lose_streak = np.zeros(self.bandit.M)
+
+    def get_updated_interest(self, actions, responses, interest):
+        return Model.get_updated_interest_winstreak(
+                    l=self.bandit.l, M=self.bandit.M,
+                    interest=interest,
+                    actions=actions, response=responses,
+                    win_streak=self.win_streak*(interest > 0),
+                    lose_streak=self.lose_streak*(interest < 0),
+                    b=self.b)
+
+    def update_state(self, cur_interest, cur_actions, cur_response):
+        self.win_streak[cur_actions] = self.win_streak[cur_actions] * cur_response + cur_response
+
+        self.lose_streak[cur_actions] = self.lose_streak[cur_actions] * (1 - cur_response) + \
+                                        (1 - cur_response)
+
+
+class RestartsLoopExperiment(BanditLoopExperiment):
+
+    def prepare(self, w, init_interest, r0=0.0, s=1.0, use_log=False):
+        super().prepare(w, init_interest, use_log=use_log)
+
+        self.r0 = r0
+        self.s = s
+
+    def get_updated_interest(self, actions, responses, interest):
+        return Model.get_updated_interest_restarts(
+                    l=self.bandit.l, M=self.bandit.M,
+                    interest=interest,
+                    actions=actions, response=responses,
+                    r0=self.r0,
+                    s=self.s)

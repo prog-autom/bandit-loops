@@ -5,6 +5,8 @@ from itertools import filterfalse
 from joblib import Parallel, delayed
 from mldev.experiment import experiment_tag
 import os
+
+from mldev.yaml_loader import stage_context
 from sklearn.model_selection import ParameterGrid
 from results import MultipleResults
 
@@ -26,7 +28,6 @@ class ExploreParams(object):
             loop_amp: '\abs(\mu^t - \mu^0)'
           pipeline:
             bandit_model: !function src/experiment.get_ts_model
-            bandit_name: 'ts_model'
             experiment: !function src/experiment.BanditLoopExperiment
             init_random_state: !function src/experiment.init_random_state
             grid_filter: !function src/experiment.skip_params
@@ -39,6 +40,7 @@ class ExploreParams(object):
 
     def __init__(self, *args, **kwargs):
         self.grid = kwargs.get('grid')
+        self.name = kwargs.get('name', 'explore_params')
         self.pipeline = kwargs.get('pipeline')
         self.run_times = kwargs.get('run_times', 1)
         self.results = kwargs.get('results', [])
@@ -47,23 +49,14 @@ class ExploreParams(object):
 
     @staticmethod
     def init_pipeline_grid(pipeline):
-        # todo this should be generic enough for different setups
         states = dict()
-        bandit_model = pipeline['bandit_model']
-        bandit_name = pipeline['bandit_name']
-        experiment = pipeline['experiment']
-        init_random_state = pipeline['init_random_state']
-        grid_filter = pipeline.get('grid_filter', bool)
-        init_interest = pipeline.get('init_interest')
+        for k in pipeline:
+            obj = pipeline.get(k, None)
+            states[k] = [[partial(ExploreParams.fetch_invoke, obj)]]
 
-        states['bandit_model'] = [[partial(ExploreParams.fetch_model, model_gen=bandit_model)]]
-        states['bandit_name'] = [[bandit_name]]
-        states['experiment'] = [[partial(ExploreParams.fetch_invoke, f=experiment)]]
-        states['init_random_state'] = [[partial(ExploreParams.fetch_invoke, f=init_random_state)]]
-        states['grid_filter'] = [[partial(ExploreParams.fetch_invoke, grid_filter)]]
-        states['init_interest'] = [[partial(ExploreParams.fetch_invoke, f=init_interest)]]
+        get_name = lambda v: f"{str(v[0].args[0].__module__).replace('.','/')}.{v[0].args[0].__qualname__}"
 
-        return ParameterGrid(states)
+        return ParameterGrid(states), get_name
 
     @staticmethod
     def get_relevant_params(func, params):
@@ -80,7 +73,7 @@ class ExploreParams(object):
     @staticmethod
     def invoke_if_defined(obj, func_name, params):
         """
-        Invoke the specificed function func_name if defined in the object obj
+        Invoke the specified function func_name if defined in the object obj
         and provide it arguments params
 
         :param obj:
@@ -126,7 +119,7 @@ class ExploreParams(object):
         :rtype: MultipleResults
         """
         params = {k: state[k] for k in param_names}
-        mye_local = MultipleResults(state['bandit_name'], params=params, **results)
+        mye_local = MultipleResults(state['experiment_name'], params=params, **results)
 
         state['init_random_state'](state={'seed':random_seed})
 
@@ -159,23 +152,28 @@ class ExploreParams(object):
         """
 
         # create a dummy pipeline grid
-        # theoretically there can be many combinations of pipelines
-        pipeline_grid = ExploreParams.init_pipeline_grid(pipeline=self.pipeline)
+        # in theory there can be many combinations of pipelines
+        with stage_context(self):
+            pipeline_grid, get_name = ExploreParams.init_pipeline_grid(pipeline=self.pipeline)
 
         for code in pipeline_grid:
 
             # prepare possible states for a fixed pipeline
-            states = dict(self.grid)
-            states.update(code)
-            states['trial'] = list(range(self.run_times))
+            with stage_context(self):
+                states = dict(self.grid)
+                states.update(code)
+                states['trial'] = list(range(self.run_times))
+                states['experiment_name'] = [self.name]
 
-            # grid_filter is needed to check for consistency in params
-            # alternative could be to throw a ValueError if params are incompatible
-            grid_filter = code['grid_filter'][0]
+                # grid_filter is needed to check for consistency in params
+                # alternative could be to throw a ValueError if params are incompatible
+                grid_filter = code['grid_filter'][0]
+                if grid_filter is None:
+                    grid_filter = bool
 
-            # gives a parameter grid to explore in parallel
-            # note that pipeline is fixed already
-            param_grid = ParameterGrid(states)
+                # gives a parameter grid to explore in parallel
+                # note that pipeline is fixed already
+                param_grid = ParameterGrid(states)
 
             # uses param_grid as a queue to fetch jobs from
             # and executes the jobs using many workers (n_jobs=-1 - means =n_cpu)
@@ -196,16 +194,25 @@ class ExploreParams(object):
             )
 
             if self.folder is not None:
-                # save collected results into the folder
-                mye_results = MultipleResults(code['bandit_name'][0],
-                                              params=self.grid, # rewrite MultipleResults
-                                              **self.results)
+                with stage_context(self):
+                    code_config = {k: get_name(v) for k, v in code.items()}
 
-                for mye_result in results:
-                    mye_results.add_results(param_names=mye_result.param_names,
-                                            **mye_result.get_state)
+                    # save collected results into the folder
+                    mye_results = MultipleResults(self.name,
+                                                  config=dict(pipeline=code_config),
+                                                  params=self.grid, # rewrite MultipleResults
+                                                  **self.results)
 
-                target_folder = f"{self.folder}"
-                os.makedirs(target_folder, exist_ok=True)
+                    for mye_result in results:
+                        mye_results.add_results(param_names=mye_result.param_names,
+                                                **mye_result.get_state)
 
-                mye_results.save_state(f"{target_folder}")
+                    target_folder = f"{self.folder}"
+                    os.makedirs(target_folder, exist_ok=True)
+
+                    mye_results.save_state(f"{target_folder}")
+
+                    mye_results.save_config(f"{target_folder}")
+
+            del results
+

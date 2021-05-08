@@ -16,67 +16,58 @@ common_pipeline: &common_pipeline
   grid_filter: !function src/experiment.skip_params
 
 grid_base: &grid_base
+  name: explore_params
   results:
     interest: "User interests"
     loop_amp: '\abs(\mu^t - \mu^0)'
-  run_times: 4
+  run_times: 10
   random_seed: "${env.RANDOMSEED}"
+  folder: "${env.TARGETFOLDER}/${self.name}"
 
 
 grid_analysis: &grid_analysis !ExploreParams
   <<: *grid_base
   grid:
-    p: [1.0]
     w: [0]
     M: [1,2,3,4,5,6,7,8,9,10]
     l: [1,2,3,4,5,6,7,8,9,10]
     b: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-    # Q is not used but declared
-    Q: [0]
     T: [2000]
   pipeline:
     <<: *common_pipeline
-    bandit_model: !function src/experiment.get_ts_model
-    bandit_name: 'ts_model'
+    experiment: !function src/experiment.WinstreakLoopExperiment
+    bandit_model: !function src/experiment.ts_model
   folder: "${env.TARGETFOLDER}/grid"
 
 
 big_grid_analysis: &big_grid_analysis !ExploreParams
   <<: *grid_base
   grid:
-    p: [1.0]
     w: [0]
     M: [4,10,50,75,100]
     l: [1,4,10,50,75,100]
     b: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-    # Q is not used but declared
-    Q: [0]
     T: [2000]
   pipeline:
     <<: *common_pipeline
-    bandit_model: !function src/experiment.get_ts_model
-    bandit_name: 'ts_model'
+    experiment: !function src/experiment.WinstreakLoopExperiment
+    bandit_model: !function src/experiment.ts_model
   folder: "${env.TARGETFOLDER}/big"
   run_times: 1
 
 optimal_grid_analysis: &optimal_grid_analysis !ExploreParams
   <<: *grid_base
   grid:
-    p: [1.0]
     w: [0., 1., 4., 10.]
     M: [10]
     l: [4]
     b: [0.0, 0.3, 0.5, 0.8, 1.0]
-    # Q is not used but declared
-    Q: [0]
     T: [5000]
     epsilon: [0.1]
   pipeline:
     <<: *common_pipeline
-    bandit_model: !function src/experiment.get_optimal_model
-    bandit_name: 'optimal_model'
+    bandit_model: !function src/experiment.optimal_model
   folder: "${env.TARGETFOLDER}/optimal"
-
 
 big_grid_pipeline: !GenericPipeline
   runs:
@@ -89,3 +80,112 @@ optimal_grid_pipeline: !GenericPipeline
 grid_pipeline: !GenericPipeline
   runs:
     - *grid_analysis
+
+
+#
+# Evaluate WinstreamLoopExperiment over parameters grid
+# Models:
+# - !function src/experiment.ts_model
+# - !function src/experiment.optimal_model
+# - !function src/experiment.epsilon_greedy_model
+# - !function src/experiment.random_model
+#
+
+winstreak_base: &winstreak_base
+  <<: *grid_base
+  grid:
+    w: [0]
+    M: [1,2,3,4,5,6,7,8,9,10]
+    l: [1,2,3,4,5,6,7,8,9,10]
+    b: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    T: [2000]
+    epsilon: [0.1]
+  pipeline: &winstreak_pipeline
+    <<: *common_pipeline
+    experiment: !function src/experiment.WinstreakLoopExperiment
+  folder: "${env.TARGETFOLDER}/winstreak"
+
+winstreak: !GenericPipeline
+  runs:
+    - !ExploreParams
+      <<: *winstreak_base
+      name: restarts_grid_ts
+      pipeline:
+        <<: *winstreak_pipeline
+        bandit_model: !function src/experiment.ts_model
+
+    - !ExploreParams
+      <<: *winstreak_base
+      name: restarts_grid_optimal
+      pipeline:
+        <<: *winstreak_pipeline
+        bandit_model: !function src/experiment.optimal_model
+
+    - !ExploreParams
+      <<: *winstreak_base
+      name: restarts_grid_epsilon_greedy
+      pipeline:
+        <<: *winstreak_pipeline
+        bandit_model: !function src/experiment.epsilon_greedy_model
+
+    - !ExploreParams
+      <<: *winstreak_base
+      name: restarts_grid_random
+      pipeline:
+        <<: *winstreak_pipeline
+        bandit_model: !function src/experiment.random_model
+
+
+#
+# Evaluate RestartsLoopExperiment over parameters grid
+# Models:
+# - !function src/experiment.ts_model
+# - !function src/experiment.optimal_model
+# - !function src/experiment.epsilon_greedy_model
+# - !function src/experiment.random_model
+#
+
+restarts_base: &restarts_base
+  <<: *grid_base
+  grid:
+    w: [0.]
+    M: [10]
+    l: [4]
+    r0: [1.0, 0.1, 0.01, 0.003]
+    s: [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    T: [5000]
+    epsilon: [0.1]
+  pipeline: &restarts_pipeline
+    <<: *common_pipeline
+    experiment: !function src/experiment.RestartsLoopExperiment
+  folder: "${env.TARGETFOLDER}/restarts"
+
+restarts: !GenericPipeline
+  runs:
+    - !ExploreParams
+      <<: *restarts_base
+      name: restarts_grid_ts
+      pipeline:
+        <<: *restarts_pipeline
+        bandit_model: !function src/experiment.ts_model
+
+    - !ExploreParams
+      <<: *restarts_base
+      name: restarts_grid_optimal
+      pipeline:
+        <<: *restarts_pipeline
+        bandit_model: !function src/experiment.optimal_model
+
+    - !ExploreParams
+      <<: *restarts_base
+      name: restarts_grid_epsilon_greedy
+      pipeline:
+        <<: *restarts_pipeline
+        bandit_model: !function src/experiment.epsilon_greedy_model
+
+    - !ExploreParams
+      <<: *restarts_base
+      name: restarts_grid_random
+      pipeline:
+        <<: *restarts_pipeline
+        bandit_model: !function src/experiment.random_model
