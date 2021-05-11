@@ -262,6 +262,8 @@ class BanditLoopExperiment:
 
             if hasattr(self.bandit, 'interest'):
                 self.bandit.interest = cur_interest
+                
+            self.update_state(cur_interest, cur_actions, cur_response)
 
             save_iter(t,
                       pr=cur_probabilities,
@@ -274,7 +276,7 @@ class BanditLoopExperiment:
                               init_interest=self.init_interest)
 
 
-class WinStreakExperiment(BanditLoopExperiment):
+class WinStreakLoopExperiment(BanditLoopExperiment):
 
     def prepare(self, w, init_interest, b=0.0, use_log=False):
         super().prepare(w, init_interest, use_log=use_log)

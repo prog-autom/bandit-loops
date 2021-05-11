@@ -5,7 +5,7 @@
 #
 
 # We fix random seed here
-random_seed: 45
+random_seed: 46
 
 # Number of trial or runs to repeat the experiment
 run_times: 1
@@ -81,95 +81,64 @@ run_model_experiment: !GenericPipeline
           # they will still be in the json dump
           w: ${env.w}
 
-run_grid: !GenericPipeline
-  runs:
-    - !BasicStage
-      name: grid_search
-      inputs:
-        - !path
-          path: ./src
-        - !path
-          files:
-            - ./experiment.yml
-            - ./explore_params.yml
-            - requirements.txt
-      outputs:
-        - !path
-          path:  !line |
-            ./results/${self.name}/${root.random_seed}
-      env:
-        PYTHONPATH: '${env.PYTHONPATH}:./src:./.mldev'
-        TARGETFOLDER: "${self.outputs[0].path}"
-        RANDOMSEED: "${root.random_seed}"
-      script:
-        - mldev run -f ./explore_params.yml grid_pipeline
+
+base_grid_stage: &base_grid_stage 
+  inputs:
+    - !path
+      path: ./src
+    - !path
+      files:
+        - ./experiment.yml
+        - ./explore_params.yml
+        - requirements.txt
+  outputs:
+    - !path
+      path:  !line |
+        ./results/${self.name}/${root.random_seed}
+  env:
+    PYTHONPATH: '${env.PYTHONPATH}:./src:./.mldev'
+    TARGETFOLDER: "${self.outputs[0].path}"
+    RANDOMSEED: "${root.random_seed}"
+    
 
 run_grid: !GenericPipeline
   runs:
     - !BasicStage
+      <<: *base_grid_stage
       name: grid_search
-      inputs:
-        - !path
-          path: ./src
-        - !path
-          files:
-            - ./experiment.yml
-            - ./explore_params.yml
-            - requirements.txt
-      outputs:
-        - !path
-          path:  !line |
-            ./results/${self.name}/${root.random_seed}
-      env:
-        PYTHONPATH: '${env.PYTHONPATH}:./src:./.mldev'
-        TARGETFOLDER: "${self.outputs[0].path}"
-        RANDOMSEED: "${root.random_seed}"
       script:
         - mldev run -f ./explore_params.yml grid_pipeline
 
 run_big_Ml_grid: !GenericPipeline
   runs:
     - !BasicStage
+      <<: *base_grid_stage
       name: big_params_grid
-      inputs:
-        - !path
-          path: ./src
-        - !path
-          files:
-            - ./experiment.yml
-            - ./explore_params.yml
-            - requirements.txt
-      outputs:
-        - !path
-          path:  !line |
-            ./results/${self.name}/${root.random_seed}
-      env:
-        PYTHONPATH: '${env.PYTHONPATH}:./src:./.mldev'
-        TARGETFOLDER: "${self.outputs[0].path}"
-        RANDOMSEED: "${root.random_seed}"
       script:
         - mldev run -f ./explore_params.yml big_grid_pipeline
 
 
-run_optimal_grid: !GenericPipeline
+winstreak_grid: !GenericPipeline
+  runs:
+    - !BasicStage 
+      <<: *base_grid_stage
+      name: winstreak_grid
+      script:
+        - mldev run -f ./explore_params.yml winstreak
+        
+        
+winstreak_random_grid: !GenericPipeline
+  runs:
+    - !BasicStage 
+      <<: *base_grid_stage
+      name: winstreak_grid
+      script:
+        - mldev run -f ./explore_params-random.yml winstreak_random        
+        
+restarts_grid: !GenericPipeline
   runs:
     - !BasicStage
-      name: optimal_grid
-      inputs:
-        - !path
-          path: ./src
-        - !path
-          files:
-            - ./experiment.yml
-            - ./explore_params.yml
-            - requirements.txt
-      outputs:
-        - !path
-          path:  !line |
-            ./results/${self.name}/${root.random_seed}
-      env:
-        PYTHONPATH: '${env.PYTHONPATH}:./src:./.mldev'
-        TARGETFOLDER: "${self.outputs[0].path}"
-        RANDOMSEED: "${root.random_seed}"
+      <<: *base_grid_stage
+      name: restarts_grid
       script:
-        - mldev run -f ./explore_params.yml optimal_grid_pipeline
+        - mldev run -f ./explore_params.yml restarts

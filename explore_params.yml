@@ -35,7 +35,7 @@ grid_analysis: &grid_analysis !ExploreParams
     T: [2000]
   pipeline:
     <<: *common_pipeline
-    experiment: !function src/experiment.WinstreakLoopExperiment
+    experiment: !function src/experiment.WinStreakLoopExperiment
     bandit_model: !function src/experiment.ts_model
   folder: "${env.TARGETFOLDER}/grid"
 
@@ -50,7 +50,7 @@ big_grid_analysis: &big_grid_analysis !ExploreParams
     T: [2000]
   pipeline:
     <<: *common_pipeline
-    experiment: !function src/experiment.WinstreakLoopExperiment
+    experiment: !function src/experiment.WinStreakLoopExperiment
     bandit_model: !function src/experiment.ts_model
   folder: "${env.TARGETFOLDER}/big"
   run_times: 1
@@ -100,37 +100,38 @@ winstreak_base: &winstreak_base
     b: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
     T: [2000]
     epsilon: [0.1]
+  run_times: 3
   pipeline: &winstreak_pipeline
     <<: *common_pipeline
-    experiment: !function src/experiment.WinstreakLoopExperiment
+    experiment: !function src/experiment.WinStreakLoopExperiment
   folder: "${env.TARGETFOLDER}/winstreak"
 
 winstreak: !GenericPipeline
   runs:
     - !ExploreParams
       <<: *winstreak_base
-      name: restarts_grid_ts
+      name: winstreak_grid_ts
       pipeline:
         <<: *winstreak_pipeline
         bandit_model: !function src/experiment.ts_model
 
     - !ExploreParams
       <<: *winstreak_base
-      name: restarts_grid_optimal
+      name: winstreak_grid_optimal
       pipeline:
         <<: *winstreak_pipeline
         bandit_model: !function src/experiment.optimal_model
 
     - !ExploreParams
       <<: *winstreak_base
-      name: restarts_grid_epsilon_greedy
+      name: winstreak_grid_epsilon_greedy
       pipeline:
         <<: *winstreak_pipeline
         bandit_model: !function src/experiment.epsilon_greedy_model
 
     - !ExploreParams
       <<: *winstreak_base
-      name: restarts_grid_random
+      name: winstreak_grid_random
       pipeline:
         <<: *winstreak_pipeline
         bandit_model: !function src/experiment.random_model
