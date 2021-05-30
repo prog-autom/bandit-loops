@@ -5,10 +5,10 @@
 #
 
 # We fix random seed here
-random_seed: 46
+random_seed: 47
 
 # Number of trial or runs to repeat the experiment
-run_times: 1
+run_times: 30
 
 
 # Models and their parameters to use

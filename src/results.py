@@ -54,8 +54,8 @@ class MultipleResults:
             data_k = pd.DataFrame(data=vars(self)[k])
             data = data.merge(data_k, how="outer", on=list(index_keys))
 
-        data.to_csv(f"{path}/{self.experiment_name}-state.csv", index_label='row')
-        data.to_json(f"{path}/{self.experiment_name}-state.json", orient="records", lines=True)
+        #data.to_csv(f"{path}/{self.experiment_name}-state.csv", index_label='row')
+        #data.to_json(f"{path}/{self.experiment_name}-state.json", orient="records", lines=True)
         data.to_parquet(f"{path}/{self.experiment_name}-state.parquet", index=True)
 
     def plot_multiple_results(self, path, plot_fun=sb.lineplot, **figures):
