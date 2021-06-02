@@ -107,7 +107,6 @@ compare_pipeline: !GenericPipeline
         bandit_model: *ts_model
 
 
-
 #
 # Evaluate WinstreamLoopExperiment over parameters grid
 # Models:
@@ -233,5 +232,3 @@ restarts_params: !GenericPipeline
       pipeline:
         <<: *restarts_pipeline
         bandit_model: *optimal_model
-
-    

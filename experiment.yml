@@ -5,6 +5,7 @@
 #
 
 # We fix random seed here
+
 random_seed: 49
 
 # Number of trial or runs to repeat the experiment
