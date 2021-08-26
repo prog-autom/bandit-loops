@@ -5,4 +5,4 @@ numpy
 tqdm
 pyarrow
 pandas
-mldev[base]@https://gitlab.com/mlrep/mldev/-/package_files/10367609/download
+mldev[base]@https://gitlab.com/mlrep/mldev/-/package_files/14279718/download

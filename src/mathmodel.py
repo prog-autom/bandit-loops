@@ -2,6 +2,7 @@ import scipy.stats as sps
 import scipy.special as special
 import numpy as np
 
+
 class BanditNoiseLoopModel:
 
     @staticmethod
@@ -26,7 +27,6 @@ class BanditNoiseLoopModel:
         assert n > 0
 
         return sps.bernoulli(p=special.expit(interest)).rvs()
-
 
     @staticmethod
     def get_updated_interest(l, M, interest, actions, response):

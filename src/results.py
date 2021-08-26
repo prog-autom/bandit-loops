@@ -3,7 +3,8 @@ from matplotlib import pyplot as plt
 import pandas as pd
 import json
 
-# TODO must also collect errors
+# TODO should also collect errors
+
 
 class MultipleResults:
     index_keys = ['round', 'trial']
@@ -54,8 +55,6 @@ class MultipleResults:
             data_k = pd.DataFrame(data=vars(self)[k])
             data = data.merge(data_k, how="outer", on=list(index_keys))
 
-        #data.to_csv(f"{path}/{self.experiment_name}-state.csv", index_label='row')
-        #data.to_json(f"{path}/{self.experiment_name}-state.json", orient="records", lines=True)
         data.to_parquet(f"{path}/{self.experiment_name}-state.parquet", index=True)
 
     def plot_multiple_results(self, path, plot_fun=sb.lineplot, **figures):
@@ -81,4 +80,4 @@ class MultipleResults:
             plt.title(fig)
             plt.legend()
             plt.savefig(f"{path}/{self.experiment_name}-{fig}.png", dpi=300)
-            data.to_csv(f"{path}/{self.experiment_name}-{fig}.csv", index_label='row')
+            data.to_parquet(f"{path}/{self.experiment_name}-{fig}.parquet", index=True)

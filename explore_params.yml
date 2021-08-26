@@ -16,10 +16,10 @@ common_pipeline: &common_pipeline
   grid_filter: !function src/experiment.skip_params
 
 functions:
-  random: &random_model !function src/experiment.random_model
-  greedy: &epsilon_greedy_model !function src/experiment.epsilon_greedy_model
-  ts: &ts_model !function src/experiment.ts_model
-  optimal: &optimal_model !function src/experiment.optimal_model
+  random: &random_model !function src/bandits.random_model
+  greedy: &epsilon_greedy_model !function src/bandits.epsilon_greedy_model
+  ts: &ts_model !function src/bandits.ts_model
+  optimal: &optimal_model !function src/bandits.optimal_model
 
 
 grid_base: &grid_base
@@ -31,6 +31,11 @@ grid_base: &grid_base
   random_seed: "${env.RANDOMSEED}"
   folder: "${env.TARGETFOLDER}/${self.name}"
 
+
+# T is the number of steps in MAB
+# w is the additive noise range [-w, w]
+# l is the number of levers to draw
+# M is the total number of levers (items)
 
 grid_analysis: &grid_analysis !ExploreParams
   <<: *grid_base
@@ -116,6 +121,13 @@ compare_pipeline: !GenericPipeline
 # - !function src/experiment.random_model
 #
 
+
+# T is the number of steps in MAB
+# w is the additive noise range [-w, w]
+# l is the number of levers to draw
+# M is the total number of levers (items)
+# b is the strength of the streak
+
 winstreak_base: &winstreak_base
   <<: *grid_base
   grid:
@@ -170,6 +182,15 @@ winstreak: !GenericPipeline
 # - !function src/experiment.epsilon_greedy_model
 # - !function src/experiment.random_model
 #
+
+# T is the number of steps in MAB
+# w is the additive noise range [-w, w]
+# l is the number of levers to draw
+# M is the total number of levers (items)
+# r0 is a probability to forget
+# s is a scaling parameter
+
+# epsilon is exploration parameter for epsilon-greedy
 
 restarts_base: &restarts_base
   <<: *grid_base

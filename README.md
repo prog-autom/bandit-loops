@@ -1,28 +1,23 @@
-# Условия существования петель скрытой обратной связи в рекомендательных системах
+# Implementation of online recommender with multi-armed bandits and feedback loops
 
-**Автор:** Пилькевич Антон
+Authors: Anton Pilkevich and Anton Khritankov
 
-**Консультант/эксперт:** Хританков Антон Сергеевич
+## Abstract
 
-## Постановка задачи
+We explore hidden feedback loops effect in online recommender systems. Feedback loops result in degradation of online multi-armed bandit (MAB) recommendations to a small subset and loss of coverage and novelty. We study how uncertainty and noise in user interests influence the existence of feedback loops. 
+First, we show that an unbiased additive random noise in user interests does not prevent a feedback loop. Second, we demonstrate that a non-zero probability of resetting user interests is sufficient to limit the feedback loop and estimate the size of the effect. 
+Our experiments confirm the theoretical findings in a simulated environment for four bandit algorithms.
 
-Целью работы является теоретический анализ условий сходимости TS для различных параметров шума p, w, u и экспериментальное подтверждение полученых соотношений. 
-
-Целью эксперимента является наблюдение петель скрытой обратной связи для определённых параметров шума. 
-Проверяется гипотеза о возникновении петель при параметрах шума, найденных из теоретических соотношений. 
-Важной частью эксперимента является сравнения поведений рекомендательной системы с шумом в ответах пользователя и без. 
-
-## Как запускать
+## Installation
 
 Running experiment with [mldev](https://gitlab.com/mlrep/mldev) involves the following steps.
 
 Install the ``mldev`` by executing
 
 ```bash
-$ git clone https://gitlab.com/mlrep/mldev 
-$ cd ./mldev && git checkout -b 79-fixes-for-0-3-dev1-exploreparams --track origin/79-fixes-for-0-3-dev1-exploreparams
-$ ./install_reqs.sh core
-$ python setup.py clean build install
+$ curl https://gitlab.com/mlrep/mldev/-/raw/develop/install_mldev.sh -o install_mldev.sh 
+$ chmod +x ./install_mldev.sh && ./install_reqs.sh base
+$ mldev version
 ``` 
 Then get the repo
 ```bash
@@ -30,20 +25,17 @@ $ git clone <this repo>
 $ cd <this repo folder>
 ```
 
-Then initialize the experiment, this will install required dependencies
+Then initialize the experiment, this will install the required dependencies
 
 ```bash
 $ mldev init -p venv .
 ```
-Now install mldev into this venv as follows (need this to run sub-experiment)
 
-```bash
-$ /bin/bash -c "source venv/bin/activate; cd ../mldev && python setup.py clean build install"
-```
+## Running the experiment
 
 Detailed description of the experiment can be found in [experiment.yml](./experiment.yml). See docs for [mldev](https://gitlab.com/mlrep/mldev) for details.
 
-Run simple experiment for a specific set of params
+Run simple experiment for a specific set of params, defined in ``bandit_loops`` in [experiment.yml](./experiment.yml)
 
 ```bash
 $ mldev run pipeline
@@ -55,36 +47,55 @@ And now, run the full experiment with params grid explored. See [explore_params.
 $ mldev run run_grid
 ```
 
-Results will be placed into [./results](./results) folder.
+Results will be placed into [./results/explore_params](./results/explore_params) folder.
 
-## Проведение полного эксперимента 
+## Repository contents
 
-Скрипт [./run_experiment.sh](./run_experiment.sh) запускает эксперимент для параметров T=2000, M=10, l=4. Перебираюся параметры шума w = [1, ..., 9] с фиксированным p = 0.9.
+Experiment source code can be found in [./src](./src) folder. 
+[main.py](./src/main.py) contains an CLI program to run the basic experiment.
+[bandits.py](./src/bandits.py) defines bandit algorithms: Thompson Sampling, Epsilon-greedy, Random and Optimal.
+[experiment.py](./src/experiment.py)  implements the simulation environment
+Results are stored and visualized using [results.py](./src/results.py) for each experiment.
+[mathmodel.py](./code/mathmodel.py) contains user interests models.
 
-The script relies on mldev to run trials for a fixed set of parameters.
+Source code for integration with MLDev is located in [./.mldev/stages](./.mldev/stages) folder. 
+The [explore_params.py](./.mldev/stages/explore_params.py) implements a custom ExploreParams
+stage to run the full factorial randomized experiment definded in [explore_params.yml](./explore_params.yml).
 
-## Исходный код
+[docs](./docs) folder contains intermediate slides and a draft paper in Russian originally 
+developed for the "My first scientific paper" course [m1p.org](m1p.org). 
 
+[figures](./figures) contain visualizations prepared for the course and the paper. 
 
-Пример.
+[notebooks](./notebooks) folder include iPython notebooks that analyse and visualize the 
+experiment results. The [mldev_contour_plots](./notebooks/mldev_contour_plots.ipynb) builds
+figures for the paper. Other notebooks contain intermediate code and may not work.
 
-Исходники кода находятся в [./src](./code) .  [main.py](./code/main.py) содержит запуск экспериментов.
-[experiment.py](./code/experiment.py) содержит реализацию шаблона проведения эксперимента.
-Данные сохраняются при помощи [results.py](./code/results.py) для каждого проведённого эксперимента.
-[mathmodel.py](./code/mathmodel.py) cодержит основные компоненты для провдения экспериментов. .
+See also the intermediate version of the experiment at the [course repo](https://github.com/Intelligent-Systems-Phystech/2021-Project-74).
 
-## Что осталось сделать
+## How to cite
 
-TODO Указать, если что-то из задуманного пока не реализованного
+Please consider citing the following papers if you find the results useful. 
 
-Пример.
+```
+@misc{
+    title={Existence conditions for hidden feedback loops in online recommender systems},
+    author={Anton Khritankov and Anton Pilkevich},
+    year={2021},
+    eprint={TODO},
+    archivePrefix={arXiv},
+    primaryClass={TODO}
+}
 
- - [ ] add a sample iPython notebook 
- - [ ] make the template support arbitrary experiment parameters without rewriting [main.py](./src/main.py)
+@misc{khritankov2021mldev,
+      title={MLDev: Data Science Experiment Automation and Reproducibility Software}, 
+      author={Anton Khritankov and Nikita Pershin and Nikita Ukhov and Artem Ukhov},
+      year={2021},
+      eprint={2107.12322},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
+```
+## License
 
-## Как процитировать работу
-
-TODO Указать ссылку на публикацию или arxiv. Если пока нет публикации дать ссылку на этот репозиторий в формате Bibtex
-
-## Лицензия
-
+The source code is licensed under the [MIT license](./LICENSE)

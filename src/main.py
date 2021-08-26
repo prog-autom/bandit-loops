@@ -2,7 +2,9 @@ import argparse
 import json
 import os
 
+from bandits import ts_model, random_model, optimal_model, epsilon_greedy_model
 from experiment import *
+from mathmodel import BanditNoiseLoopModel
 from results import MultipleResults
 
 from joblib.parallel import Parallel, delayed
@@ -14,26 +16,15 @@ random_seed = None
 
 
 def create_model(model_params):
-    if 'ts_model' in model_params:
-        model_name = 'ts_model'
-        model = lambda : get_ts_model(**model_params['ts_model'])
-        print(f"Using model: {model_name}")
+    global ts_model, random_model, optimal_model, epsilon_greedy_model
+
+    for model_name in model_params:
+        model_func = globals()[model_name]
+        model = lambda : model_func(**model_params[model_name])
+
+        print(f"Using model: {model_name} with {model_func}")
         yield model, model_name
-    elif 'random_model' in model_params:
-        model_name = 'random_model'
-        model = lambda : get_random_model(**model_params['random_model'])
-        print(f"Using model: {model_name}")
-        yield model, model_name
-    elif 'optimal_model' in model_params:
-        model_name = 'optimal'
-        model = lambda : get_optimal_model(**model_params['random_model'])
-        print(f"Using model: {model_name}")
-        yield model, model_name
-    elif 'epsilon_greedy_model' in model_params:
-        model_name = 'epsilon_greedy_model'
-        model = lambda : get_epsilonn_greedy_model(**model_params['random_model'])
-        print(f"Using model: {model_name}")
-        yield model, model_name
+
 
 def bandit_loop(model_params, params):
     print(f"Running bandit-loop experiment")
@@ -44,8 +35,11 @@ def bandit_loop(model_params, params):
             ble_local = MultipleResults(model_name, **BanditLoopExperiment.default_state)
             ble = BanditLoopExperiment(model, model_name)
 
-            prepare_params = {k: params[k] for k in params.keys() & {'w', 'Q', 'p', 'b'}}
-            ble.prepare(**prepare_params)
+            init_interest = lambda: BanditNoiseLoopModel.interest_init(model_params[model_name]['M'])
+
+            prepare_params = {k: params[k] for k in params.keys() & {'w'}}
+            ble.prepare(init_interest=init_interest,
+                        **prepare_params)
 
             loop_params = {k: params[k] for k in params.keys() & {'T'}}
             ble.run_experiment(**loop_params)
@@ -64,8 +58,8 @@ def bandit_loop(model_params, params):
         ble_results.save_state(f"{target_folder}")
 
 
-def init_random(random_seed):
-    return init_random_state(random_seed)
+def init_random(random_state):
+    return init_random_state(random_state)
 
 
 if __name__ == "__main__":

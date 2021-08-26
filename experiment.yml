@@ -14,7 +14,8 @@ run_times: 30
 
 # Models and their parameters to use
 # Any key in this object will trigger a corresponding model builder
-# The ``ridge_model`` inits a builder for an Sklearn RidgeCV model
+# The ``ts_model`` is a Thompson Sampling MAB
+# The ``random_model`` is a Random model
 default_model: &default_params
   ts_model:
     M: 10
@@ -27,6 +28,9 @@ default_model: &default_params
 # Definition of experiment stages
 #
 
+# T is the number of steps in MAB
+# w is the additive noise range [-w, w]
+
 bandit_loops: &bandit_loops !BasicStage
   name: bandit_loops
   params: &bandit_loop_params
@@ -35,30 +39,25 @@ bandit_loops: &bandit_loops !BasicStage
     experiment: &default_experiment
       T: 1000
       w: 10.0
-      Q: 1.0
-      p: 0.9
-      b: 0.0
   outputs:
     - !path
       path:  !line |
               ./results/${self.name}/${root.random_seed}/
               ${self.params.experiment.T}-
-              ${self.params.experiment.w}/
-              ${self.params.experiment.Q}-
-              ${self.params.experiment.p}
+              ${self.params.experiment.w}
 
   script:
     - >
       python3 ./src/main.py bandit-loop \
                      --model_params "${json(self.params.model_params)}" \
                      --params "${json(self.params.experiment)}" \
-                     --folder "${self.outputs[0].path}" \
+                     --folder "${path(self.outputs[0].path)}" \
                      --random_seed "${root.random_seed}" \
                      --run_times "${root.run_times}"
     - >
       echo "${json(self.params)}" > "${self.outputs[0].path}/params.json"
 
-# This is basic pipeline to run our two stages in sequence
+# This is basic pipeline to run our stage
 pipeline: !GenericPipeline
   runs:
     - *bandit_loops
