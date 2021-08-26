@@ -9,7 +9,7 @@ class BanditNoiseLoopModel:
     def interest_init(M):
         assert M >= 0
 
-        return sps.uniform(-0.5, 1).rvs(M)
+        return sps.uniform.rvs(-0.5, 1, M)
 
     @staticmethod
     def make_response_noise(interest, w):
@@ -17,8 +17,8 @@ class BanditNoiseLoopModel:
 
         assert n > 0
         assert w >= 0
-        noise_interest = interest + sps.uniform(-w, 2*w).rvs(n)
-        return sps.bernoulli(p=special.expit(noise_interest)).rvs()
+        noise_interest = interest + sps.uniform.rvs(-w, 2*w, n)
+        return sps.bernoulli.rvs(p=special.expit(noise_interest))
 
     @staticmethod
     def make_response(interest):
@@ -26,13 +26,13 @@ class BanditNoiseLoopModel:
 
         assert n > 0
 
-        return sps.bernoulli(p=special.expit(interest)).rvs()
+        return sps.bernoulli.rvs(p=special.expit(interest))
 
     @staticmethod
     def get_updated_interest(l, M, interest, actions, response):
         assert M >= l > 0
 
-        bias = sps.uniform(0, 0.01).rvs(l)
+        bias = sps.uniform.rvs(0, 0.01, l)
         new_interest = np.zeros(M)
         new_interest[actions] += (response * bias -
                 bias * (1 - response))
@@ -42,7 +42,7 @@ class BanditNoiseLoopModel:
     def get_updated_interest_winstreak(l, M, interest, actions, response, win_streak, lose_streak, b):
         assert M >= l > 0
 
-        bias = sps.uniform(0, 0.01).rvs(l)
+        bias = sps.uniform.rvs(0, 0.01, l)
         new_interest = np.zeros(M)
         tmp_lose_streak = lose_streak[actions] - (lose_streak[actions] > 0 )
         tmp_win_streak = win_streak[actions] - (win_streak[actions] > 0 )

@@ -115,10 +115,10 @@ compare_pipeline: !GenericPipeline
 #
 # Evaluate WinstreamLoopExperiment over parameters grid
 # Models:
-# - !function src/experiment.ts_model
-# - !function src/experiment.optimal_model
-# - !function src/experiment.epsilon_greedy_model
-# - !function src/experiment.random_model
+# - !function src/bandits.ts_model
+# - !function src/bandits.optimal_model
+# - !function src/bandits.epsilon_greedy_model
+# - !function src/bandits.random_model
 #
 
 
@@ -150,37 +150,37 @@ winstreak: !GenericPipeline
       name: winstreak_grid_ts
       pipeline:
         <<: *winstreak_pipeline
-        bandit_model: !function src/experiment.ts_model
+        bandit_model: *ts_model
 
     - !ExploreParams
       <<: *winstreak_base
       name: winstreak_grid_optimal
       pipeline:
         <<: *winstreak_pipeline
-        bandit_model: !function src/experiment.optimal_model
+        bandit_model: *optimal_model
 
     - !ExploreParams
       <<: *winstreak_base
       name: winstreak_grid_epsilon_greedy
       pipeline:
         <<: *winstreak_pipeline
-        bandit_model: !function src/experiment.epsilon_greedy_model
+        bandit_model: *epsilon_greedy_model
 
     - !ExploreParams
       <<: *winstreak_base
       name: winstreak_grid_random
       pipeline:
         <<: *winstreak_pipeline
-        bandit_model: !function src/experiment.random_model
+        bandit_model: *random_model
 
 
 #
 # Evaluate RestartsLoopExperiment over parameters grid
 # Models:
-# - !function src/experiment.ts_model
-# - !function src/experiment.optimal_model
-# - !function src/experiment.epsilon_greedy_model
-# - !function src/experiment.random_model
+# - !function src/bandits.ts_model
+# - !function src/bandits.optimal_model
+# - !function src/bandits.epsilon_greedy_model
+# - !function src/bandits.random_model
 #
 
 # T is the number of steps in MAB
@@ -214,28 +214,28 @@ restarts: !GenericPipeline
       name: restarts_grid_ts
       pipeline:
         <<: *restarts_pipeline
-        bandit_model: !function src/experiment.ts_model
+        bandit_model: *ts_model
 
     - !ExploreParams
       <<: *restarts_base
       name: restarts_grid_optimal
       pipeline:
         <<: *restarts_pipeline
-        bandit_model: !function src/experiment.optimal_model
+        bandit_model: *optimal_model
 
     - !ExploreParams
       <<: *restarts_base
       name: restarts_grid_epsilon_greedy
       pipeline:
         <<: *restarts_pipeline
-        bandit_model: !function src/experiment.epsilon_greedy_model
+        bandit_model: *epsilon_greedy_model
 
     - !ExploreParams
       <<: *restarts_base
       name: restarts_grid_random
       pipeline:
         <<: *restarts_pipeline
-        bandit_model: !function src/experiment.random_model
+        bandit_model: *random_model
 
 
 restarts_params: !GenericPipeline

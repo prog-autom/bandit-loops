@@ -27,7 +27,7 @@ class TSBandit:
         Get the next prediction from the bandit
         :return: an np array with action probabilities, an np array of selected actions
         """
-        pr = sps.beta(a=self.params[:,0], b=self.params[:,1]).rvs()
+        pr = sps.beta.rvs(a=self.params[:,0], b=self.params[:,1])
         rec = np.argsort(-pr)[:self.l]
         return pr, rec
 
@@ -108,7 +108,7 @@ class EpsilonGreedyModel:
         """
         cur_max = np.argsort(-self.interest)[:self.l]
         random_choice = np.random.permutation(self.M)[:self.l]
-        greedy = sps.bernoulli(self.epsilon).rvs(self.l)
+        greedy = sps.bernoulli.rvs(self.epsilon, self.l)
         return [], greedy*random_choice + (1-greedy)*cur_max
 
     def update(self, actions, response):
