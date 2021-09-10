@@ -62,9 +62,6 @@ Source code for integration with MLDev is located in [./.mldev/stages](./.mldev/
 The [explore_params.py](./.mldev/stages/explore_params.py) implements a custom ExploreParams
 stage to run the full factorial randomized experiment definded in [explore_params.yml](./explore_params.yml).
 
-[docs](./docs) folder contains intermediate slides and a draft paper in Russian originally 
-developed for the "My first scientific paper" course [m1p.org](m1p.org). 
-
 [figures](./figures) contain visualizations prepared for the course and the paper. 
 
 [notebooks](./notebooks) folder include iPython notebooks that analyse and visualize the 
@@ -99,3 +96,8 @@ Please consider citing the following papers if you find the results useful.
 ## License
 
 The source code is licensed under the [MIT license](./LICENSE)
+
+## See also
+
+[Initial results](https://github.com/Intelligent-Systems-Phystech/2021-Project-74) for this paper have been developed 
+for the "My first scientific paper" course [m1p.org](m1p.org). 
