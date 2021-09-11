@@ -100,4 +100,4 @@ The source code is licensed under the [MIT license](./LICENSE)
 ## See also
 
 [Initial results](https://github.com/Intelligent-Systems-Phystech/2021-Project-74) for this paper have been developed 
-for the "My first scientific paper" course [m1p.org](m1p.org). 
+for the "My first scientific paper" course [m1p.org](https://m1p.org). 
