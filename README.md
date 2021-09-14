@@ -75,13 +75,13 @@ See also the intermediate version of the experiment at the [course repo](https:/
 Please consider citing the following papers if you find the results useful. 
 
 ```
-@misc{
+@misc{khritankov2021bandit,
     title={Existence conditions for hidden feedback loops in online recommender systems},
     author={Anton Khritankov and Anton Pilkevich},
     year={2021},
-    eprint={TODO},
+    eprint={2109.05278},
     archivePrefix={arXiv},
-    primaryClass={TODO}
+    primaryClass={cs.IR}
 }
 
 @misc{khritankov2021mldev,
