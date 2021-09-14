@@ -62,13 +62,11 @@ Source code for integration with MLDev is located in [./.mldev/stages](./.mldev/
 The [explore_params.py](./.mldev/stages/explore_params.py) implements a custom ExploreParams
 stage to run the full factorial randomized experiment definded in [explore_params.yml](./explore_params.yml).
 
-[figures](./figures) contain visualizations prepared for the course and the paper. 
+[figures](./figures) contain visualizations prepared the paper. 
 
 [notebooks](./notebooks) folder include iPython notebooks that analyse and visualize the 
 experiment results. The [mldev_contour_plots](./notebooks/mldev_contour_plots.ipynb) builds
-figures for the paper. Other notebooks contain intermediate code and may not work.
-
-See also the intermediate version of the experiment at the [course repo](https://github.com/Intelligent-Systems-Phystech/2021-Project-74).
+figures for the paper.
 
 ## How to cite
 
