@@ -73,23 +73,31 @@ figures for the paper.
 Please consider citing the following papers if you find the results useful. 
 
 ```
-@misc{khritankov2021bandit,
-    title={Existence conditions for hidden feedback loops in online recommender systems},
-    author={Anton Khritankov and Anton Pilkevich},
-    year={2021},
-    eprint={2109.05278},
-    archivePrefix={arXiv},
-    primaryClass={cs.IR}
+@InProceedings{10.1007/978-3-030-91560-5_19,
+    author="Khritankov, Anton and Pilkevich, Anton",
+    editor="Zhang, Wenjie and Zou, Lei and Maamar, Zakaria and Chen, Lu",
+    title="Existence Conditions for Hidden Feedback Loops in Online Recommender Systems",
+    booktitle="Web Information Systems Engineering -- WISE 2021",
+    year="2021",
+    publisher="Springer International Publishing",
+    address="Cham",
+    pages="267--274",
+    isbn="978-3-030-91560-5"
 }
 
-@misc{khritankov2021mldev,
-      title={MLDev: Data Science Experiment Automation and Reproducibility Software}, 
-      author={Anton Khritankov and Nikita Pershin and Nikita Ukhov and Artem Ukhov},
-      year={2021},
-      eprint={2107.12322},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG}
+
+@InProceedings{10.1007/978-3-031-12285-9_1,
+    author="Khritankov, Anton and Pershin, Nikita and Ukhov, Nikita and Ukhov, Artem",
+    editor="Pozanenko, Alexei and Stupnikov, Sergey and Thalheim, Bernhard and Mendez, Eva and Kiselyova, Nadezhda",
+    title="MLDev: Data Science Experiment Automation and Reproducibility Software",
+    booktitle="Data Analytics and Management in Data Intensive Domains",
+    year="2022",
+    publisher="Springer International Publishing",
+    address="Cham",
+    pages="3--18",
+    isbn="978-3-031-12285-9"
 }
+
 ```
 ## License
 
